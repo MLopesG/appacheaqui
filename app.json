@@ -1,0 +1,12 @@
+{
+  "name": "acheaqui",
+  "displayName": "acheaqui",
+  "expo": {
+    "name": "acheaqui",
+    "slug": "acheaqui",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
