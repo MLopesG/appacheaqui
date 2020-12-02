@@ -1,108 +1,254 @@
 import React from 'react';
-import { StyleSheet, View, Image, Text, ScrollView } from 'react-native';
-import { Title, ToggleButton, Divider, Button } from 'react-native-paper';
+import { StyleSheet, View, Image, Text, ScrollView, Linking, Platform, Modal } from 'react-native';
+import { Title, ToggleButton, Button, Divider, ActivityIndicator, Card } from 'react-native-paper';
+import YoutubePlayer from 'react-native-youtube-iframe';
+
+import api from '../axios';
+import Carousel from './components/carousel';
 
 class Profile extends React.Component {
+    state = {
+        search: '',
+        cliente: {},
+        servicos: [],
+        carregamento: true,
+        modalVisible: false
+    };
+
+    toggleButtonModal() {
+        this.setState({
+            modalVisible: !this.state.modalVisible
+        });
+    }
+
+    async getEmpresa() {
+        const { id } = this.props.route.params;
+
+        const cliente = await api.get(`/clientes.php?action=single&id=${id}`);
+        const servicos = await api.get(`/servicos.php?action=all&id=${id}`);
+
+        this.setState({ cliente: cliente.data.cliente, servicos: servicos.data.servicos, carregamento: false });
+    }
+
+    whatsapp(phone) {
+        Linking.canOpenURL("whatsapp://send?text=Ache Aqui Ali").then(supported => {
+            if (supported) {
+                return Linking.openURL(
+                    `whatsapp://send?phone=${phone}&text=Ache Aqui Ali`
+                );
+            } else {
+                return Linking.openURL(
+                    `https://api.whatsapp.com/send?phone=${phone}&text=Ache Aqui Ali`
+                );
+            }
+        })
+    }
+
+    phone(tel) {
+        if (Platform.OS === 'android') {
+            return `tel:${tel}`;
+        } else {
+            return `telprompt:${tel}`;
+        }
+    }
+
+
+    componentDidMount() {
+        this.getEmpresa();
+    }
 
     render() {
-        const { navigation } = this.props;
 
-        return (
-            <View >
-                 <View>
-                    <Image
-                        style={styles.Image}
-                        source={{
-                            uri: 'https://media-cdn.tripadvisor.com/media/photo-s/08/8e/3f/41/labella-pizzaria.jpg',
-                        }}
-                    />
+        const { cliente, carregamento, servicos, modalVisible } = this.state;
+
+        const stylesProfile = function (cliente) {
+            return {
+                backgroundColor: cliente.cor_background
+            }
+        }
+
+        const styleColor = function (cliente) {
+            return {
+                color: cliente.cor_fonte,
+                fontWeight: '700',
+                fontSize: 16,
+                marginTop: 10
+            }
+        }
+
+        // Alterar Titulo
+        this.props.navigation.setOptions({ title: cliente.apelido });
+
+        if (carregamento) {
+            return (
+                <View style={styles.load}>
+                    <ActivityIndicator size={35} animating={carregamento} color={'#006400'} />
                 </View>
-                <ScrollView style={styles.container}>
-                    <View style={styles.bottom, styles.center}>
-                        <Title style={styles.bottom}>Pizzaria La Bella</Title>
+            );
+        } else {
 
-                        <ToggleButton.Row >
-                            <ToggleButton color="#006400" icon="whatsapp" value="left" />
-                            <ToggleButton color="#006400" icon="phone" value="right" />
-                            <ToggleButton color="#006400" icon="map" value="right" />
-                        </ToggleButton.Row>
-                    </View>
-
-                    <Divider style={styles.top} />
-
+            return (
+                <View style={stylesProfile(cliente)} >
                     <View>
-                        <View>
-                            <Text style={styles.titulo}>Informações Pessoais</Text>
-                            <Text style={styles.space}>Email: email@gmail.com.br</Text>
-                            <Text style={styles.space}>Site: site.com.br</Text>
-                        </View>
-
-                        <View>
-                            <Text style={styles.titulo}>Hórario de Funcionamento</Text>
-                            <Text style={styles.space}>+ Segunda - Feira 06:00 as 12:00 | 13:00 as 17:00</Text>
-                            <Text style={styles.space}>+ Terça - Feira 06:00 as 12:00 | 13:00 as 17:00</Text>
-                            <Text style={styles.space}>+ Quarta - Feira 06:00 as 12:00 | 13:00 as 17:00</Text>
-                            <Text style={styles.space}>+ Quinta - Feira 06:00 as 12:00 | 13:00 as 17:00</Text>
-                            <Text style={styles.space}>+ Sexta - Feira 06:00 as 12:00 | 13:00 as 17:00</Text>
-                            <Text style={styles.space}>+ Sabádo - 06:00 as 12:00</Text>
-                        </View>
-
-                        <View style={styles.bottom}>
-                            <Text style={styles.titulo}>Descrição</Text>
-                            <Text style={styles.space}>
-                                A expressão Lorem ipsum em design gráfico e editoração é um texto padrão em latim utilizado na produção gráfica para preencher os espaços de texto em publicações para testar e ajustar aspectos visuais antes de utilizar conteúdo real
-                            </Text>
-                        </View>
-
-                        <View style={styles.btnContainer}>
-                            <Button style={styles.bottom}  color="#006400" mode="outlined"  onPress={() => navigation.navigate('Promocoes')}>
-                                Promoções
-                            </Button>
-                            <Button style={styles.bottom} color="#006400" mode="outlined" onPress={() => navigation.navigate('Serviços/Produtos')}>
-                                Serviços/Produtos
-                            </Button>
-                        </View>
+                        <Image
+                            style={styles.header}
+                            source={{
+                                uri: cliente.fachada,
+                            }}
+                        />
                     </View>
-                </ScrollView>
-            </View>
-        );
+                    <Image style={styles.avatar} source={{ uri: cliente.logo }} onPress={() => this.toggleButtonModal()} />
+                    <ScrollView style={[styles.container]}>
+                        <View style={styles.bottom, styles.center}>
+                            <Title style={styles.bottom}>{cliente.apelido}</Title>
+                            <ToggleButton.Row>
+                                <Button icon="facebook" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(cliente.facebook)}></Button>
+                                <Button icon="twitter" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(cliente.twitter)}></Button>
+                                <Button icon="instagram" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(cliente.instagram)}></Button>
+                                <Button icon="whatsapp" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.whatsapp(cliente.fonecelular))}></Button>
+                                <Button icon="phone" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(cliente.fonecelular))} ></Button>
+                            </ToggleButton.Row>
+                        </View>
+
+                        <Divider style={styles.top} />
+
+                        <Modal
+                            transparent
+                            visible={modalVisible}
+                            onDismiss={() => setModalVisible(false)}
+                            onRequestClose={() => setModalVisible(false)}
+                            animationType={'slide'}>
+                            <View style={styles.container}>
+                                <View style={styles.modalContainer}>
+                                    <Text>This is a player in a modal</Text>
+                                    <YoutubePlayer play={true} height={200} videoId={'AVAc1gYLZK0'} />
+                                </View>
+                            </View>
+                        </Modal>
+
+                        <View>
+                            <View>
+                                <Text style={styleColor(cliente)}>Informações Pessoais</Text>
+
+                                <View>
+                                    <Text style={styleColor(cliente)}>Email:</Text>
+                                    <Text>{cliente.email}</Text>
+                                </View>
+                                <View  >
+                                    <Text style={styleColor(cliente)}>Site:</Text>
+                                    <Text>{cliente.site}</Text>
+                                </View>
+                            </View>
+
+                            <View>
+                                <Text style={styleColor(cliente)}>Hórario de Funcionamento</Text>
+                                <Text>{cliente.horariodeatendimento}</Text>
+                            </View>
+
+                            <View style={styles.bottom}>
+                                <Text style={styleColor(cliente)}>Descrição</Text>
+                                <Text style={{ textAlign: "justify" }}>
+                                    {cliente.descricaodaempresa}
+                                </Text>
+                            </View>
+
+                            <View style={styles.bottom}>
+                                <Text style={[styles.containerInfo, styleColor(cliente)]}>Promoções</Text>
+                                <Carousel tipo="promocao" id={cliente.Id}></Carousel>
+                            </View>
+
+                            {
+                                servicos.length > 0 ? <View style={[styles.bottom, styles.btnContainer]}>
+                                    <Text style={[styles.containerInfo, styleColor(cliente)]}>Serviços</Text>
+                                    <View >
+                                        {
+                                            servicos.map((item, index) => {
+                                                return (
+                                                    <Card style={{ backgroundColor: 'transparent', border: 'none' }} elevation={0} key={index}>
+                                                        <Card.Title title={item.descricao} subtitle={item.valor != null ? 'Valor: ' + item.valor : 'Valor: 0,00'} />
+                                                        <Card.Cover source={{ uri: item.url }} />
+                                                    </Card>
+                                                )
+                                            })
+                                        }
+                                    </View>
+                                </View> : <View></View>
+                            }
+                        </View>
+                    </ScrollView>
+                </View>
+            );
+        }
     }
 }
 
 const styles = StyleSheet.create({
+    containerInfo: { marginBottom: 10, fontWeight: '700', fontSize: 16 },
     container: {
         paddingRight: 20,
         paddingLeft: 20,
         paddingTop: 20,
-        paddingBottom: 40
+        marginTop: 70,
+        paddingBottom: 40,
+        height: 500
     },
     Image: {
         height: 250,
         width: '100%'
     },
+    ImageServico: {
+        height: 130,
+        width: 130
+    },
     top: {
         marginTop: 20
     },
     bottom: {
-        marginBottom: 25
+        marginBottom: 15
+    },
+    load: {
+        padding: 30
     },
     center: {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
     },
-    titulo: {
-        fontWeight: 'bold',
-        fontSize: 18,
-        marginTop: 20
+    btnContainer: {
+        marginBottom: 80
     },
-    space: {
-        lineHeight: 30,
-        fontSize: 15
+    header: {
+        backgroundColor: "#006400",
+        height: 200,
     },
-    btnContainer:{
-        height:400
-    }
+    avatar: {
+        width: 140,
+        height: 140,
+        backgroundColor: "#006400",
+        borderRadius: 100,
+        borderWidth: 4,
+        borderColor: "white",
+        marginBottom: 10,
+        alignSelf: 'center',
+        position: 'absolute',
+        marginTop: 130
+    },
+    bodyContent: {
+        flex: 1,
+        alignItems: 'center',
+        padding: 30,
+    },
+    buttonContainer: {
+        marginTop: 10,
+        height: 45,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+        width: 250,
+        borderRadius: 30,
+        backgroundColor: "#00BFFF",
+    },
 });
 
 export default Profile;

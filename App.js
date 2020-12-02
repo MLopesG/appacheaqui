@@ -1,13 +1,14 @@
 import 'react-native-gesture-handler';
 import React from 'react';
+
+import { StyleSheet,StatusBar} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Provider as PaperProvider, IconButton } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Provider as PaperProvider, IconButtona } from 'react-native-paper';
 import Home from './views/home';
 import Empresa from './views/empresa';
 import Perfil from './views/profile';
-import Promocoes from './views/promocoes';
-import Servicos from './views/servicos';
 import FaleConosco from './views/faleconosco';
 
 const Stack = createStackNavigator();
@@ -15,25 +16,25 @@ const Stack = createStackNavigator();
 class App extends React.Component {
   render() {
     return (
+      <>
+      <StatusBar backgroundColor="#006400" />
       <PaperProvider>
         <NavigationContainer>
           <Stack.Navigator>
             <Stack.Screen
-              name="Ache Aqui"
+              name="Ache Aqui Ali"
               component={Home}
               options={({ navigation }) =>({
-                title: 'Ache Aqui',
+                title: 'ACHEI AQUI ALI',
                 headerTitleAlign: 'center',
                 headerTintColor: '#006400',
                 headerTitleStyle: {
                   fontWeight: 'bold',
                 },
                 headerRight: () => (
-                  <IconButton
-                    icon="006400"
-                    color="#006400"
-                    size={25}
-                    onPress={() => navigation.navigate('FaleConosco')}
+                  <Icon name="information-outline" size={28} color="#006400"
+                  style={styles.espaco}
+                  onPress={() => navigation.navigate('FaleConosco')}
                   />
                 ),
               })}
@@ -43,18 +44,16 @@ class App extends React.Component {
               name="Empresas"
               component={Empresa}
               options={({ navigation }) =>({
-                title: 'Empresas',
+                title: 'EMPRESAS',
                 headerTitleAlign: 'center',
                 headerTintColor: '#006400',
                 headerTitleStyle: {
                   fontWeight: 'bold',
                 },
                 headerRight: () => (
-                  <IconButton
-                    icon="006400"
-                    color="#006400"
-                    size={25}
-                    onPress={() => navigation.navigate('FaleConosco')}
+                  <Icon name="information-outline" size={28} color="#006400"
+                  style={styles.espaco}
+                  onPress={() => navigation.navigate('FaleConosco')}
                   />
                 ),
               })}
@@ -64,33 +63,7 @@ class App extends React.Component {
               name="Profile"
               component={Perfil}
               options={({ navigation }) =>({
-                title: 'Perfil',
-                headerTitleAlign: 'center',
-                headerTintColor: '#006400',
-                headerTitleStyle: {
-                  fontWeight: 'bold',
-                }
-              })}
-            />
-
-            <Stack.Screen
-              name="Promocoes"
-              component={Promocoes}
-              options={({ navigation }) =>({
-                title: 'Promoções',
-                headerTitleAlign: 'center',
-                headerTintColor: '#006400',
-                headerTitleStyle: {
-                  fontWeight: 'bold',
-                }
-              })}
-            />
-
-            <Stack.Screen
-              name="Serviços/Produtos"
-              component={Servicos}
-              options={({ navigation }) =>({
-                title: 'Serviços/Produtos',
+                title: 'CARREGANDO PERFIL ...',
                 headerTitleAlign: 'center',
                 headerTintColor: '#006400',
                 headerTitleStyle: {
@@ -103,7 +76,7 @@ class App extends React.Component {
               name="FaleConosco"
               component={FaleConosco}
               options={{
-                title: 'Fale Conosco',
+                title: 'FALE CONOSCO',
                 headerTitleAlign: 'center',
                 headerTintColor: '#006400',
                 headerTitleStyle: {
@@ -115,8 +88,15 @@ class App extends React.Component {
           </Stack.Navigator>
         </NavigationContainer>
       </PaperProvider>
+      </>
     );
   }
 }
 
+const styles = StyleSheet.create({
+  espaco: {
+      paddingRight: 20
+  },
+});
 export default App;
+

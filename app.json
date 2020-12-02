@@ -2,11 +2,24 @@
   "name": "acheaqui",
   "displayName": "acheaqui",
   "expo": {
-    "name": "acheaqui",
-    "slug": "acheaqui",
+    "name": "Ache Aqui Ali",
+    "slug": "Ache-Aqui-Ali",
     "version": "1.0.0",
     "assetBundlePatterns": [
       "**/*"
-    ]
+    ],
+    "icon": "./img/icon.jpg",
+    "splash": {
+      "image": "./img/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "bundleIdentifier": "yes"
+    },
+    "android": {
+      "package": "com.yourcompany.yourappname",
+      "versionCode": 1
+    }
   }
 }

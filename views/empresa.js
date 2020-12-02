@@ -1,109 +1,227 @@
 import React from 'react';
-import { StyleSheet, View, ScrollView, Image, TouchableHighlight } from 'react-native';
-import { Searchbar, Surface, ToggleButton } from 'react-native-paper';
-import ImageSliderz from 'react-native-image-slideshow';
-import ImageOverlay from "react-native-image-overlay";
+import { StyleSheet, View, ScrollView, Image, TouchableHighlight, Linking, Platform } from 'react-native';
+import { Searchbar, Surface, ToggleButton, Button, ActivityIndicator } from 'react-native-paper';
 import { FlatGrid } from 'react-native-super-grid';
+import BannerCidade from './components/bannerCidade';
+import Carousel from './components/carousel';
+import api from '../axios';
 
 class Empresa extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
   state = {
     search: '',
-    visible: true
+    empresas: [],
+    carregamento: true,
+    carregamentoCategorias: false,
+    showCancel: false,
   };
 
   updateSearch = (search) => {
-    this.setState({ search });
+    this.setState((prevState) => {
+      prevState['search'] = search;
+      prevState['showCancel'] = true;
+      prevState['carregamentoCategorias'] = true;
+      this.getEmpresasSearch(prevState.search);
+      return prevState;
+    });
   };
 
+  toggleCancel() {
+    this.setState({
+      showCancel: !this.state.showCancel
+    });
+  }
+
+  async getEmpresasCategorias() {
+    const { id } = this.props.route.params;
+
+    const empresas = await api.get(`/categorias.php?action=empresas&id=${id}`);
+
+    setTimeout(() => {
+      this.setState({ empresas: empresas.data.empresas, carregamento: false });
+    }, 500)
+  }
+
+  async getEmpresasSearch(search) {
+    const getSearch = await api.get(`/categorias.php?action=empresas-search&search=${search}`);
+
+    if (getSearch.data.empresas.length > 0) {
+      this.setState({ empresas: getSearch.data.empresas, carregamentoCategorias: false });
+    }
+  }
+
+  async registrarClick($id) {
+    await api.get(`/clientes.php?action=click&id=${id}`);
+  }
+
+  componentDidMount() {
+    this.getEmpresasCategorias();
+  }
+
+  whatsapp(phone) {
+    Linking.canOpenURL("whatsapp://send?text=Ache Aqui Ali").then(supported => {
+      if (supported) {
+        return Linking.openURL(
+          `whatsapp://send?phone=${phone}&text=Ache Aqui Ali`
+        );
+      } else {
+        return Linking.openURL(
+          `https://api.whatsapp.com/send?phone=${phone}&text=Ache Aqui Ali`
+        );
+      }
+    })
+  }
+
+  phone(tel) {
+    if (Platform.OS === 'android') {
+      return `tel:${tel}`;
+    } else {
+      return `telprompt:${tel}`;
+    }
+  }
+
+  maps(item) {
+    return `https://www.google.com/maps/place/${item.end_rua}+${item.end_numero}+${item.nome}`;
+  }
+
   render() {
-    const { search, visible } = this.state;
+    const { search, empresas, showCancel, carregamento, carregamentoCategorias } = this.state;
     const { navigation } = this.props;
 
-    return (
-      <View>
-        <View>
-          <View>
-            <ImageOverlay
-              source={{ uri: "https://www.douradosagora.com.br/media/images/328/65864/59a6c8077bf02d31818bb84d8e4b9153e352bb34dd21c.jpg" }}
-              title="Dourados, MS - 11/10/2020"
-              height={150}
-              contentPosition="center"
-            />
-          </View>
+    if (carregamento) {
+      return (
+        <View style={styles.load}>
+          <ActivityIndicator size={35} animating={carregamento} color={'#006400'} />
         </View>
-        <View style={styles.container}>
-          <View style={styles.bottom}>
-            <ImageSliderz
-              height={200}
-              dataSource={[
-                { url: 'https://wl-incrivel.cf.tsp.li/resize/1200x630/jpg/683/952/6c8eb05c83b3d17573e0b3a011.jpg' },
-                { url: 'https://i.ytimg.com/vi/sjjxNjSSYyU/sddefault.jpg' },
-                { url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTUqiG_11xQM28bT7oLaopQRpphfyUablgGpQ&usqp=CAU' }
-              ]} />
-          </View>
+      );
+    } else {
+      if (showCancel) {
+        return (
+          <View  style={styles.container}>
+            <View >
+              <View>
+                <Searchbar
+                onIconPress={() => {
+                  this.toggleCancel()
+                }}
+                  placeholder="Buscar ..."
+                  onChangeText={this.updateSearch}
+                  value={search}
+                />
 
-          <View>
-            <Searchbar
-              placeholder="Buscar ..."
-              onChangeText={this.updateSearch}
-              value={search}
-            />
-
-          </View>
-
-          <View>
-            <ScrollView style={styles.empresas} >
-              <FlatGrid
-                itemDimension={180}
-                data={[
-                  {
-                    logo: 'https://static.expressodelivery.com.br/imagens/logos/43559/Expresso-Delivery_689c95c3253904fa4ded72f28ee825b6.png',
-                    titulo: 'Pizzaria La Bella'
-                  },
-                  {
-                    logo: 'https://www.zto.digital/images/logo@2x.png',
-                    titulo: 'ZTO Tecnologia'
-                  },
-                  {
-                    logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcSJCdOV5ZtQmKt2luYcaQxSe1BTjHXO3AK3fQ&usqp=CAU',
-                    titulo: 'Fiat'
-                  },
-                  {
-                    logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcROmdBc4i9CAQ2T5SYlpAw0vfds0FkbMRboCQ&usqp=CAU',
-                    titulo: 'Hyundai'
-                  }
-                ]}
-                renderItem={({ item, index }) => (
-                  <View>
-                    <TouchableHighlight
-                      key={index}
-                      activeOpacity={0.6}
-                      underlayColor="#DDDDDD"
-                      onPress={() => navigation.navigate('Profile')}
-                    >
-                      <Surface style={styles.surface} >
-                        <Image
-                          style={styles.Image}
-                          source={{
-                            uri: item.logo,
+              </View>
+              <View>
+                <ScrollView style={styles.categoriasAuto} >
+                {
+                carregamentoCategorias ? 
+                (
+                <View style={styles.load}>
+                  <ActivityIndicator size={35} animating={carregamentoCategorias} color={'#006400'} />
+                </View>
+                ):
+                 <FlatGrid
+                    itemDimension={150}
+                    data={empresas}
+                    renderItem={({ item, index }) => (
+                      <View>
+                        <TouchableHighlight
+                          key={index}
+                          activeOpacity={0.6}
+                          underlayColor="#DDDDDD"
+                          onPress={() => {
+                            navigation.navigate('Profile', { id: item.Id });
+                            this.registrarClick(item.Id);
                           }}
-                        />
-                      </Surface>
-                    </TouchableHighlight>
-                    <ToggleButton.Row>
-                      <ToggleButton color="#006400" icon="whatsapp" value="left" />
-                      <ToggleButton color="#006400" icon="phone" value="right" />
-                      <ToggleButton color="#006400" icon="map" value="right" />
-                    </ToggleButton.Row>
-
-                  </View>
-                )}
-              />
-            </ScrollView>
+                        >
+                          <Surface style={styles.surface} >
+                            <Image
+                              style={styles.Image}
+                              source={{
+                                uri: item.logo,
+                              }}
+                            />
+                          </Surface>
+                        </TouchableHighlight>
+                        <ToggleButton.Row>
+                          <Button icon="whatsapp" labelStyle={{color:'#006400'}} color="#006400"  style={[ { marginTop:7, marginRight:5, width:57, borderColor: '#006400'}]} compact mode="outlined" onPress={() =>Linking.openURL(this.whatsapp(item.fonecelular))}></Button>
+                          <Button icon="phone" labelStyle={{color:'#006400'}}  color="#006400"  style={[ { marginTop:7, marginRight:5, width:57, borderColor: '#006400'}]} compact mode="outlined" onPress={() =>Linking.openURL(this.phone(item.fonecelular))}></Button>
+                          <Button icon="map" labelStyle={{color:'#006400'}} color="#006400" style={[ { marginTop:7 , marginRight:5, width:57, borderColor: '#006400'}]} compact mode="outlined" onPress={() =>Linking.openURL(this.maps(item))}></Button>
+                        </ToggleButton.Row>
+                      </View>
+                    )}
+                  />}
+                </ScrollView>
+              </View>
+            </View>
           </View>
-        </View>
-      </View>
-    );
+        );
+      } else {
+        return (
+          <View>
+            <View>
+              <BannerCidade />
+            </View>
+            <View style={styles.container}>
+              <Carousel tipo={1}></Carousel>
+              <View>
+                <Searchbar
+                onIconPress={() => {
+                  this.toggleCancel()
+                }}
+                  placeholder="Buscar ..."
+                  onChangeText={this.updateSearch}
+                  value={search}
+                />
+
+              </View>
+
+              <View>
+                <ScrollView style={styles.empresas} >
+                  { carregamentoCategorias ? (
+                     <View style={styles.load}>
+                     <ActivityIndicator size={35} animating={carregamento} color={'#006400'} />
+                   </View>
+                  ) : <FlatGrid
+                    itemDimension={150}
+                    data={empresas}
+                    renderItem={({ item, index }) => (
+                      <View>
+                        <TouchableHighlight
+                          key={index}
+                          activeOpacity={0.6}
+                          underlayColor="#DDDDDD"
+                          onPress={() => {
+                            navigation.navigate('Profile', { id: item.Id });
+                            this.registrarClick(item.Id);
+                          }}
+                        >
+                          <Surface style={styles.surface} >
+                            <Image
+                              style={styles.Image}
+                              source={{
+                                uri: item.logo,
+                              }}
+                            />
+                          </Surface>
+                        </TouchableHighlight>
+                        <ToggleButton.Row>
+                          <Button icon="whatsapp" labelStyle={{color:'#006400'}} color="#006400"  style={[ { marginTop:7, marginRight:5, width:57, borderColor: '#006400'}]} compact mode="outlined" onPress={() =>Linking.openURL(this.whatsapp(item.fonecelular))}></Button>
+                          <Button icon="phone" labelStyle={{color:'#006400'}}  color="#006400"  style={[ { marginTop:7, marginRight:5, width:57, borderColor: '#006400'}]} compact mode="outlined" onPress={() =>Linking.openURL(this.phone(item.fonecelular))}></Button>
+                          <Button icon="map" labelStyle={{color:'#006400'}} color="#006400" style={[ { marginTop:7 , marginRight:5, width:57, borderColor: '#006400'}]} compact mode="outlined" onPress={() =>Linking.openURL(this.maps(item))}></Button>
+                        </ToggleButton.Row>
+                      </View>
+                    )}
+                  />}
+                </ScrollView>
+              </View>
+            </View>
+          </View>
+        );
+      }
+    }
   }
 }
 
@@ -116,6 +234,9 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: 'white'
+  },
+  load: {
+    padding: 30
   },
   bottom: {
     marginBottom: 10
@@ -138,6 +259,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 4,
   },
+  categoriasAuto: {
+    height: '100%'
+  }
 });
 
 export default Empresa;
