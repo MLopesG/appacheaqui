@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, View, Image, Text, ScrollView } from 'react-native';
+import { StyleSheet, View, Image, Text, ScrollView} from 'react-native';
 import { ToggleButton, Button } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 class FaleConosco extends React.Component {
 
@@ -12,38 +13,29 @@ class FaleConosco extends React.Component {
                         <View >
                             <Text style={styles.titulo}>Descrição:</Text>
                             <Text style={styles.space}>
-                                A expressão Lorem ipsum em design gráfico e editoração é um texto padrão em latim utilizado na produção gráfica para preencher os espaços de texto em publicações para testar e ajustar aspectos visuais antes de utilizar conteúdo real
+                                O Achei Aqui Ali é o mais completo guia comercial, com melhor visualização, localização e e-commerce. Projetado para ampliar a visibilidade, estreitando o relacionamento entre lojistas e consumidores.
                             </Text>
                         </View>
 
                         <View>
                             <Text style={styles.titulo}>Telefones:</Text>
-                            <Text style={styles.space}>Telefone: 67 998343255</Text>
-                            <Text style={styles.space}>Telefone: 67 998343255</Text>
-                            <Text style={styles.space}>Telefone: 67 998343255</Text>
-                            <Text style={styles.space}>Telefone: 67 998343255</Text>
-                        </View>
-
-                        <View >
-                            <Text style={styles.titulo}>Endereço:</Text>
-                            <Text style={styles.space}>Rua: Takão Massago, 15678</Text>
-                            <Text style={styles.space}>Bairro: Jardim Novo Horizonte</Text>
-                            <Text style={styles.space}>Estado/Cidade: Mato Grosso Do Sul  - Dourados</Text>
+                            <Text style={styles.space}>Telefone: (67) 99691-1212</Text>
+                            <Text style={styles.space}>Telefone: (67) 3422-1212</Text>
                         </View>
 
                         <View style={styles.bottom}>
                             <Text style={styles.titulo}>Redes Sociais:</Text>
-                            <ToggleButton.Row >
-                                <ToggleButton color="#006400" icon="whatsapp" value="left" />
-                                <ToggleButton color="#006400" icon="facebook" value="right" />
-                                <ToggleButton color="#006400" icon="instagram" value="right" />
+                            <ToggleButton.Row>
+                                <Button icon="facebook"  labelStyle={{color:'#ffffff'}} color="#006400"  style={{marginRight:10}} compact mode="contained" onPress={() => Linking.openURL('https://www.facebook.com/acheiaquiali')}></Button>
+                                <Button icon="instagram"  labelStyle={{color:'#ffffff'}} color="#006400"  style={{marginRight:10}} compact mode="contained" onPress={() => Linking.openURL('https://www.instagram.com/acheiaquiali')}></Button>
+                                <Button   labelStyle={{color:'#ffffff'}} color="#006400"  style={{marginRight:10}} compact mode="contained" onPress={() => Linking.openURL('http://www.acheiaquiali.com.br')}>
+                                    <Icon name="cellphone-link" size={18} color="#ffffff"></Icon>
+                                </Button>
                             </ToggleButton.Row>
                         </View>
 
                         <View style={styles.btnContainer}>
-                            <Button style={styles.bottom} color="#006400" mode="outlined" >
-                                Página Da Internet
-                            </Button>
+                            
                         </View>
                     </View>
                 </ScrollView>

@@ -5,6 +5,7 @@ import { FlatGrid } from 'react-native-super-grid';
 import BannerCidade from './components/bannerCidade';
 import Carousel from './components/carousel';
 import api from '../axios';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 class Empresa extends React.Component {
   constructor(props) {
@@ -65,7 +66,7 @@ class Empresa extends React.Component {
     Linking.canOpenURL("whatsapp://send?text=Ache Aqui Ali").then(supported => {
       if (supported) {
         return Linking.openURL(
-          `whatsapp://send?phone=${phone}&text=Ache Aqui Ali`
+          `whatsapp://send?phone=+55${phone}&text=Ache Aqui Ali`
         );
       } else {
         return Linking.openURL(
@@ -100,13 +101,13 @@ class Empresa extends React.Component {
     } else {
       if (showCancel) {
         return (
-          <View  style={styles.container}>
+          <View style={styles.container}>
             <View >
               <View>
                 <Searchbar
-                onIconPress={() => {
-                  this.toggleCancel()
-                }}
+                  onIconPress={() => {
+                    this.toggleCancel()
+                  }}
                   placeholder="Buscar ..."
                   onChangeText={this.updateSearch}
                   value={search}
@@ -115,44 +116,47 @@ class Empresa extends React.Component {
               </View>
               <View>
                 <ScrollView style={styles.categoriasAuto} >
-                {
-                carregamentoCategorias ? 
-                (
-                <View style={styles.load}>
-                  <ActivityIndicator size={35} animating={carregamentoCategorias} color={'#006400'} />
-                </View>
-                ):
-                 <FlatGrid
-                    itemDimension={150}
-                    data={empresas}
-                    renderItem={({ item, index }) => (
-                      <View>
-                        <TouchableHighlight
-                          key={index}
-                          activeOpacity={0.6}
-                          underlayColor="#DDDDDD"
-                          onPress={() => {
-                            navigation.navigate('Profile', { id: item.Id });
-                            this.registrarClick(item.Id);
-                          }}
-                        >
-                          <Surface style={styles.surface} >
-                            <Image
-                              style={styles.Image}
-                              source={{
-                                uri: item.logo,
+                  {
+                    carregamentoCategorias ?
+                      (
+                        <View style={styles.load}>
+                          <ActivityIndicator size={35} animating={carregamentoCategorias} color={'#006400'} />
+                        </View>
+                      ) :
+                      <FlatGrid
+                        itemDimension={150}
+                        data={empresas}
+                        renderItem={({ item, index }) => (
+                          <View>
+                            <TouchableHighlight
+                              key={index}
+                              activeOpacity={0.6}
+                              underlayColor="#DDDDDD"
+                              onPress={() => {
+                                navigation.navigate('Profile', { id: item.Id });
+                                this.registrarClick(item.Id);
                               }}
-                            />
-                          </Surface>
-                        </TouchableHighlight>
-                        <ToggleButton.Row>
-                          <Button icon="whatsapp" labelStyle={{color:'#006400'}} color="#006400"  style={[ { marginTop:7, marginRight:5, width:57, borderColor: '#006400'}]} compact mode="outlined" onPress={() =>Linking.openURL(this.whatsapp(item.fonecelular))}></Button>
-                          <Button icon="phone" labelStyle={{color:'#006400'}}  color="#006400"  style={[ { marginTop:7, marginRight:5, width:57, borderColor: '#006400'}]} compact mode="outlined" onPress={() =>Linking.openURL(this.phone(item.fonecelular))}></Button>
-                          <Button icon="map" labelStyle={{color:'#006400'}} color="#006400" style={[ { marginTop:7 , marginRight:5, width:57, borderColor: '#006400'}]} compact mode="outlined" onPress={() =>Linking.openURL(this.maps(item))}></Button>
-                        </ToggleButton.Row>
-                      </View>
-                    )}
-                  />}
+                            >
+                              <Surface style={styles.surface} >
+                                <Image
+                                  style={styles.Image}
+                                  source={{
+                                    uri: item.logo,
+                                  }}
+                                />
+                              </Surface>
+                            </TouchableHighlight>
+                            <ToggleButton.Row>
+                              <Button icon="whatsapp" labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.whatsapp(item.fonecelular))}></Button>
+                              <Button icon="phone" labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(item.fonecelular))}></Button>
+                              <Button labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.maps(item))}>
+                                <Icon name="map-marker" size={18} color="#ffffff"
+                                />
+                              </Button>
+                            </ToggleButton.Row>
+                          </View>
+                        )}
+                      />}
                 </ScrollView>
               </View>
             </View>
@@ -168,9 +172,9 @@ class Empresa extends React.Component {
               <Carousel tipo={1}></Carousel>
               <View>
                 <Searchbar
-                onIconPress={() => {
-                  this.toggleCancel()
-                }}
+                  onIconPress={() => {
+                    this.toggleCancel()
+                  }}
                   placeholder="Buscar ..."
                   onChangeText={this.updateSearch}
                   value={search}
@@ -180,41 +184,44 @@ class Empresa extends React.Component {
 
               <View>
                 <ScrollView style={styles.empresas} >
-                  { carregamentoCategorias ? (
-                     <View style={styles.load}>
-                     <ActivityIndicator size={35} animating={carregamento} color={'#006400'} />
-                   </View>
+                  {carregamentoCategorias ? (
+                    <View style={styles.load}>
+                      <ActivityIndicator size={35} animating={carregamento} color={'#006400'} />
+                    </View>
                   ) : <FlatGrid
-                    itemDimension={150}
-                    data={empresas}
-                    renderItem={({ item, index }) => (
-                      <View>
-                        <TouchableHighlight
-                          key={index}
-                          activeOpacity={0.6}
-                          underlayColor="#DDDDDD"
-                          onPress={() => {
-                            navigation.navigate('Profile', { id: item.Id });
-                            this.registrarClick(item.Id);
-                          }}
-                        >
-                          <Surface style={styles.surface} >
-                            <Image
-                              style={styles.Image}
-                              source={{
-                                uri: item.logo,
-                              }}
-                            />
-                          </Surface>
-                        </TouchableHighlight>
-                        <ToggleButton.Row>
-                          <Button icon="whatsapp" labelStyle={{color:'#006400'}} color="#006400"  style={[ { marginTop:7, marginRight:5, width:57, borderColor: '#006400'}]} compact mode="outlined" onPress={() =>Linking.openURL(this.whatsapp(item.fonecelular))}></Button>
-                          <Button icon="phone" labelStyle={{color:'#006400'}}  color="#006400"  style={[ { marginTop:7, marginRight:5, width:57, borderColor: '#006400'}]} compact mode="outlined" onPress={() =>Linking.openURL(this.phone(item.fonecelular))}></Button>
-                          <Button icon="map" labelStyle={{color:'#006400'}} color="#006400" style={[ { marginTop:7 , marginRight:5, width:57, borderColor: '#006400'}]} compact mode="outlined" onPress={() =>Linking.openURL(this.maps(item))}></Button>
-                        </ToggleButton.Row>
-                      </View>
-                    )}
-                  />}
+                      itemDimension={150}
+                      data={empresas}
+                      renderItem={({ item, index }) => (
+                        <View>
+                          <TouchableHighlight
+                            key={index}
+                            activeOpacity={0.6}
+                            underlayColor="#DDDDDD"
+                            onPress={() => {
+                              navigation.navigate('Profile', { id: item.Id });
+                              this.registrarClick(item.Id);
+                            }}
+                          >
+                            <Surface style={styles.surface} >
+                              <Image
+                                style={styles.Image}
+                                source={{
+                                  uri: item.logo,
+                                }}
+                              />
+                            </Surface>
+                          </TouchableHighlight>
+                          <ToggleButton.Row>
+                            <Button icon="whatsapp" labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.whatsapp(item.fonecelular))}></Button>
+                            <Button icon="phone" labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(item.fonecelular))}></Button>
+                            <Button labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.maps(item))}>
+                              <Icon name="map-marker" size={18} color="#ffffff"
+                              />
+                            </Button>
+                          </ToggleButton.Row>
+                        </View>
+                      )}
+                    />}
                 </ScrollView>
               </View>
             </View>

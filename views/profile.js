@@ -1,8 +1,7 @@
 import React from 'react';
-import { StyleSheet, View, Image, Text, ScrollView, Linking, Platform, Modal } from 'react-native';
-import { Title, ToggleButton, Button, Divider, ActivityIndicator, Card } from 'react-native-paper';
-import YoutubePlayer from 'react-native-youtube-iframe';
-
+import { StyleSheet, View, Image, Text, ScrollView, Linking, Platform } from 'react-native';
+import { Title, ToggleButton, Button, Divider, ActivityIndicator, Card, Provider, Modal, Portal } from 'react-native-paper';
+import YoutubePlayer from "react-native-youtube-iframe";
 import api from '../axios';
 import Carousel from './components/carousel';
 
@@ -63,7 +62,7 @@ class Profile extends React.Component {
 
         const stylesProfile = function (cliente) {
             return {
-                backgroundColor: cliente.cor_background
+                backgroundColor: cliente.cor_background,
             }
         }
 
@@ -88,78 +87,81 @@ class Profile extends React.Component {
         } else {
 
             return (
-                <View style={stylesProfile(cliente)} >
-                    <View>
-                        <Image
-                            style={styles.header}
-                            source={{
-                                uri: cliente.fachada,
-                            }}
-                        />
-                    </View>
-                    <Image style={styles.avatar} source={{ uri: cliente.logo }} onPress={() => this.toggleButtonModal()} />
-                    <ScrollView style={[styles.container]}>
-                        <View style={styles.bottom, styles.center}>
-                            <Title style={styles.bottom}>{cliente.apelido}</Title>
-                            <ToggleButton.Row>
-                                <Button icon="facebook" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(cliente.facebook)}></Button>
-                                <Button icon="twitter" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(cliente.twitter)}></Button>
-                                <Button icon="instagram" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(cliente.instagram)}></Button>
-                                <Button icon="whatsapp" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.whatsapp(cliente.fonecelular))}></Button>
-                                <Button icon="phone" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(cliente.fonecelular))} ></Button>
-                            </ToggleButton.Row>
+                <View >
+                    <View style={stylesProfile(cliente)} >
+                        <Portal>
+                            <Modal visible={modalVisible} onDismiss={() => this.toggleButtonModal()} contentContainerStyle={{ margin: 10, backgroundColor: 'white', padding: 10 }}>
+                                <YoutubePlayer
+                                    height={200}
+                                    play={true}
+                                    videoId={cliente.video}
+                                />
+                            </Modal>
+                        </Portal>
+                        <View>
+                            <Image
+                                style={styles.header}
+                                source={{
+                                    uri: cliente.fachada,
+                                }}
+                            />
                         </View>
-
-                        <Divider style={styles.top} />
-
-                        <Modal
-                            transparent
-                            visible={modalVisible}
-                            onDismiss={() => setModalVisible(false)}
-                            onRequestClose={() => setModalVisible(false)}
-                            animationType={'slide'}>
-                            <View style={styles.container}>
-                                <View style={styles.modalContainer}>
-                                    <Text>This is a player in a modal</Text>
-                                    <YoutubePlayer play={true} height={200} videoId={'AVAc1gYLZK0'} />
-                                </View>
+                        <Image style={styles.avatar} source={{ uri: cliente.logo }} />
+                        <ScrollView style={styles.headerTop}>
+                            <View style={ styles.center}>
+                                <Title style={[styles.bottom, styleColor(cliente)]}>{cliente.apelido}</Title>
+                                <ToggleButton.Row>
+                                    <Button icon="play" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => this.toggleButtonModal()}></Button>
+                                    <Button icon="facebook" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(cliente.facebook)}></Button>
+                                    <Button icon="twitter" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(cliente.twitter)}></Button>
+                                    <Button icon="instagram" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(cliente.instagram)}></Button>
+                                    <Button icon="whatsapp" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.whatsapp(cliente.fonecelular))}></Button>
+                                    <Button icon="phone" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(cliente.fonecelular))} ></Button>
+                                </ToggleButton.Row>
                             </View>
-                        </Modal>
 
+                            <Divider style={styles.top} />
+
+
+                        </ScrollView>
+                    </View>
+
+                    <View style={[styles.containerInfoEmpresa]}>
+                    <ScrollView >
                         <View>
                             <View>
-                                <Text style={styleColor(cliente)}>Informações Pessoais</Text>
+                                <Text style={styles.titulo}>Informações Pessoais</Text>
 
                                 <View>
-                                    <Text style={styleColor(cliente)}>Email:</Text>
+                                    <Text style={styles.titulo}>Email:</Text>
                                     <Text>{cliente.email}</Text>
                                 </View>
                                 <View  >
-                                    <Text style={styleColor(cliente)}>Site:</Text>
+                                    <Text style={styles.titulo}>Site:</Text>
                                     <Text>{cliente.site}</Text>
                                 </View>
                             </View>
 
                             <View>
-                                <Text style={styleColor(cliente)}>Hórario de Funcionamento</Text>
+                                <Text style={styles.titulo}>Hórario de Funcionamento</Text>
                                 <Text>{cliente.horariodeatendimento}</Text>
                             </View>
 
                             <View style={styles.bottom}>
-                                <Text style={styleColor(cliente)}>Descrição</Text>
+                                <Text style={styles.titulo}>Descrição</Text>
                                 <Text style={{ textAlign: "justify" }}>
                                     {cliente.descricaodaempresa}
                                 </Text>
                             </View>
 
                             <View style={styles.bottom}>
-                                <Text style={[styles.containerInfo, styleColor(cliente)]}>Promoções</Text>
+                                <Text style={[styles.containerInfo, styles.titulo]}>Promoções</Text>
                                 <Carousel tipo="promocao" id={cliente.Id}></Carousel>
                             </View>
 
                             {
                                 servicos.length > 0 ? <View style={[styles.bottom, styles.btnContainer]}>
-                                    <Text style={[styles.containerInfo, styleColor(cliente)]}>Serviços</Text>
+                                    <Text style={[styles.containerInfo, styles.titulo]}>Serviços</Text>
                                     <View >
                                         {
                                             servicos.map((item, index) => {
@@ -175,7 +177,8 @@ class Profile extends React.Component {
                                 </View> : <View></View>
                             }
                         </View>
-                    </ScrollView>
+                        </ScrollView>
+                    </View>
                 </View>
             );
         }
@@ -191,6 +194,23 @@ const styles = StyleSheet.create({
         marginTop: 70,
         paddingBottom: 40,
         height: 500
+    },
+    containerInfoEmpresa: {
+        paddingRight: 20,
+        paddingLeft: 20,
+        paddingTop: 20,
+        paddingBottom: 40,
+        height: 500
+    },
+    modal: {
+        width: 500,
+        height: 350
+    },
+    headerTop:{
+        marginTop:75
+    },  
+    header:{
+        padding: 30
     },
     Image: {
         height: 250,
@@ -249,6 +269,11 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         backgroundColor: "#00BFFF",
     },
+    titulo: {
+        fontWeight: '700',
+        fontSize: 14,
+        marginTop: 10
+    }
 });
 
 export default Profile;
