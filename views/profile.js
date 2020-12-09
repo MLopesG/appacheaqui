@@ -1,7 +1,7 @@
 import React from 'react';
-import { StyleSheet, View, Image, Text, ScrollView, Linking, Platform } from 'react-native';
+import { StyleSheet, View, Image, Text, ScrollView, Linking, Platform, RefreshControl } from 'react-native';
 import { Title, ToggleButton, Button, Divider, ActivityIndicator, Card, Provider, Modal, Portal } from 'react-native-paper';
-import YoutubePlayer from "react-native-youtube-iframe";
+import WebView from 'react-native-webview';
 import api from '../axios';
 import Carousel from './components/carousel';
 
@@ -11,7 +11,8 @@ class Profile extends React.Component {
         cliente: {},
         servicos: [],
         carregamento: true,
-        modalVisible: false
+        modalVisible: false,
+        refreshing: false
     };
 
     toggleButtonModal() {
@@ -31,15 +32,9 @@ class Profile extends React.Component {
 
     whatsapp(phone) {
         Linking.canOpenURL("whatsapp://send?text=Ache Aqui Ali").then(supported => {
-            if (supported) {
-                return Linking.openURL(
-                    `whatsapp://send?phone=${phone}&text=Ache Aqui Ali`
-                );
-            } else {
-                return Linking.openURL(
-                    `https://api.whatsapp.com/send?phone=${phone}&text=Ache Aqui Ali`
-                );
-            }
+            return Linking.openURL(
+                `https://api.whatsapp.com/send?phone=+55${phone}&text=Ache Aqui Ali`
+            );
         })
     }
 
@@ -51,14 +46,28 @@ class Profile extends React.Component {
         }
     }
 
+    email(email) {
+        return `mailto:${email}?subject=Contato via app Achei Aqui Ali&body=Contato Achei Aqui Ali`;
+    }
+
 
     componentDidMount() {
         this.getEmpresa();
     }
 
+    _onRefresh = () => {
+        this.setState({ refreshing: true, carregamento: true });
+        setTimeout(() => {
+            this.setState({ refreshing: false });
+            this.getEmpresa();
+        }, 2000)
+
+        clearTimeout();
+    }
+
     render() {
 
-        const { cliente, carregamento, servicos, modalVisible } = this.state;
+        const { cliente, carregamento, refreshing, servicos, modalVisible } = this.state;
 
         const stylesProfile = function (cliente) {
             return {
@@ -87,58 +96,64 @@ class Profile extends React.Component {
         } else {
 
             return (
-                <View >
-                    <View style={stylesProfile(cliente)} >
-                        <Portal>
-                            <Modal visible={modalVisible} onDismiss={() => this.toggleButtonModal()} contentContainerStyle={{ margin: 10, backgroundColor: 'white', padding: 10 }}>
-                                <YoutubePlayer
-                                    height={200}
-                                    play={true}
-                                    videoId={cliente.video}
+
+                <ScrollView refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={this._onRefresh} />}>
+                    <View >
+                        <View style={stylesProfile(cliente)} >
+                            <Portal style={{ width: '100%', height: 200 }}>
+                                <Modal visible={modalVisible} onDismiss={() => this.toggleButtonModal()} contentContainerStyle={{ margin: 10, backgroundColor: 'white', padding: 10, height: 200 }}>
+                                    <WebView
+                                        allowsFullscreenVideo
+                                        allowsInlineMediaPlayback
+                                        mediaPlaybackRequiresUserAction
+                                        source={{
+                                            uri: cliente.video
+                                        }}
+                                        style={{ width: '100%', height: 200 }}
+                                    />
+                                </Modal>
+                            </Portal>
+                            <View>
+                                <Image
+                                    style={styles.header}
+                                    source={{
+                                        uri: cliente.fachada,
+                                    }}
                                 />
-                            </Modal>
-                        </Portal>
-                        <View>
-                            <Image
-                                style={styles.header}
-                                source={{
-                                    uri: cliente.fachada,
-                                }}
-                            />
-                        </View>
-                        <Image style={styles.avatar} source={{ uri: cliente.logo }} />
-                        <ScrollView style={styles.headerTop}>
-                            <View style={ styles.center}>
-                                <Title style={[styles.bottom, styleColor(cliente)]}>{cliente.apelido}</Title>
-                                <ToggleButton.Row>
-                                    <Button icon="play" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => this.toggleButtonModal()}></Button>
-                                    <Button icon="facebook" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(cliente.facebook)}></Button>
-                                    <Button icon="twitter" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(cliente.twitter)}></Button>
-                                    <Button icon="instagram" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(cliente.instagram)}></Button>
-                                    <Button icon="whatsapp" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.whatsapp(cliente.fonecelular))}></Button>
-                                    <Button icon="phone" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(cliente.fonecelular))} ></Button>
-                                </ToggleButton.Row>
                             </View>
+                            <Image style={styles.avatar} source={{ uri: cliente.logo }} />
+                            <ScrollView style={styles.headerTop}>
+                                <View style={styles.center}>
+                                    <Title style={[styles.bottom, styleColor(cliente)]}>{cliente.apelido}</Title>
+                                    <ToggleButton.Row>
+                                        <Button icon="play" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => this.toggleButtonModal()}></Button>
+                                        <Button icon="facebook" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(`https://facebook.com/${cliente.facebook}`)}></Button>
+                                        <Button icon="twitter" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(`https://twitter.com/${cliente.twitter}`)}></Button>
+                                        <Button icon="instagram" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(`https://www.instagram.com/${cliente.instagram}`)}></Button>
+                                        <Button icon="whatsapp" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => this.whatsapp(cliente.fonecelular)}></Button>
+                                        <Button icon="phone" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(cliente.fonecelular))} ></Button>
+                                    </ToggleButton.Row>
+                                </View>
 
-                            <Divider style={styles.top} />
+                                <Divider style={styles.top} />
 
+                            </ScrollView>
+                        </View>
 
-                        </ScrollView>
-                    </View>
-
-                    <View style={[styles.containerInfoEmpresa]}>
-                    <ScrollView >
-                        <View>
+                        <View style={styles.containerInfoEmpresa}>
                             <View>
                                 <Text style={styles.titulo}>Informações Pessoais</Text>
 
                                 <View>
                                     <Text style={styles.titulo}>Email:</Text>
-                                    <Text>{cliente.email}</Text>
+                                    <Text onPress={() => Linking.openURL(this.email(cliente.email))} style={[styles.click]}>{cliente.email}</Text>
                                 </View>
                                 <View  >
                                     <Text style={styles.titulo}>Site:</Text>
-                                    <Text>{cliente.site}</Text>
+                                    <Text onPress={() => Linking.openURL(`http://${cliente.site}`)} style={[styles.click]} >{cliente.site}</Text>
                                 </View>
                             </View>
 
@@ -161,12 +176,12 @@ class Profile extends React.Component {
 
                             {
                                 servicos.length > 0 ? <View style={[styles.bottom, styles.btnContainer]}>
-                                    <Text style={[styles.containerInfo, styles.titulo]}>Serviços</Text>
+                                    <Text style={[styles.containerInfo, styles.titulo]}> Produtos e/ou Serviços</Text>
                                     <View >
                                         {
                                             servicos.map((item, index) => {
                                                 return (
-                                                    <Card style={{ backgroundColor: 'transparent', border: 'none' }} elevation={0} key={index}>
+                                                    <Card elevation={1} elevation={0} key={index}>
                                                         <Card.Title title={item.descricao} subtitle={item.valor != null ? 'Valor: ' + item.valor : 'Valor: 0,00'} />
                                                         <Card.Cover source={{ uri: item.url }} />
                                                     </Card>
@@ -177,9 +192,9 @@ class Profile extends React.Component {
                                 </View> : <View></View>
                             }
                         </View>
-                        </ScrollView>
                     </View>
-                </View>
+
+                </ScrollView>
             );
         }
     }
@@ -199,17 +214,16 @@ const styles = StyleSheet.create({
         paddingRight: 20,
         paddingLeft: 20,
         paddingTop: 20,
-        paddingBottom: 40,
-        height: 500
+        paddingBottom: 40
     },
     modal: {
         width: 500,
         height: 350
     },
-    headerTop:{
-        marginTop:75
-    },  
-    header:{
+    headerTop: {
+        marginTop: 75
+    },
+    header: {
         padding: 30
     },
     Image: {
@@ -273,6 +287,11 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 14,
         marginTop: 10
+    },
+    click: {
+        textDecorationLine: "underline",
+        textDecorationStyle: "solid",
+        textDecorationColor: "#000"
     }
 });
 

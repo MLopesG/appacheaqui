@@ -9,21 +9,13 @@ class Home extends React.Component {
   state = {
     search: '',
     categorias: [],
-    showCancel: false,
     carregamento: true,
     carregamentoCategorias: false,
   };
 
-  toggleCancel() {
-    this.setState({
-      showCancel: !this.state.showCancel
-    });
-  }
-
   updateSearch = (search) => {
     this.setState((prevState) => {
       prevState['search'] = search;
-      prevState['showCancel'] = true;
       prevState['carregamentoCategorias'] = true;
       this.getCategoriasSearch(prevState.search);
       return prevState;
@@ -54,7 +46,7 @@ class Home extends React.Component {
   }
 
   render() {
-    const { search, categorias, showCancel, carregamento, carregamentoCategorias } = this.state;
+    const { search, categorias, carregamento, carregamentoCategorias } = this.state;
     const { navigation } = this.props;
 
     if (carregamento) {
@@ -64,103 +56,53 @@ class Home extends React.Component {
         </View>
       );
     } else {
-      if (showCancel) {
-        return (
+
+      return (
+        <ScrollView>
           <View>
-            <View style={styles.container}>
+            <BannerCidade />
+          </View>
+          <View style={styles.container}>
+            <Carousel tipo={0}></Carousel>
+            <View>
               <Searchbar
-                onIconPress={() => {
-                  this.toggleCancel()
-                }}
                 placeholder="Buscar categoria ..."
                 onChangeText={this.updateSearch}
                 value={search}
               />
             </View>
-            <ScrollView style={styles.categoriasAuto} >
-              {
-                carregamentoCategorias ? 
-                (
-                <View style={styles.load}>
-                  <ActivityIndicator size={35} animating={carregamentoCategorias} color={'#006400'} />
-                </View>
-                ) : categorias.map((item, index) => {
-                  return (
-                    <View>
-                      <TouchableHighlight
-                        key={index}
-                        activeOpacity={0.6}
-                        underlayColor="#DDDDDD"
-                        onPress={() => {
-                          this.registrarClick(item.Id);
-                          navigation.navigate('Empresas', { id: item.Id })
-                        }}
-                      >
-                        <List.Item
-                          key={index}
-                          title={item.descricao}
-                          left={props => <List.Icon {...props} icon="equal" />}
-                        />
-                      </TouchableHighlight>
-                      <Divider />
-                    </View>
-                  );
-                })
-              }
-            </ScrollView>
-          </View>
-        );
-      } else {
-        return (
-          <View>
             <View>
-              <BannerCidade />
-            </View>
-            <View style={styles.container}>
-              <Carousel tipo={0}></Carousel>
-              <View>
-                <Searchbar
-                  onChange={() => {
-                    this.toggleCancel()
-                  }}
-                  placeholder="Buscar categoria ..."
-                  onChangeText={this.updateSearch}
-                  value={search}
-                />
-              </View>
-              <View>
 
-                <ScrollView style={styles.categorias} >
-                  {
-                    categorias.map((item, index) => {
-                      return (
-                        <View>
-                          <TouchableHighlight
+              <View style={styles.categorias} >
+                {
+                  categorias.map((item, index) => {
+                    return (
+                      <View>
+                        <TouchableHighlight
+                          key={index}
+                          activeOpacity={0.6}
+                          underlayColor="#DDDDDD"
+                          onPress={() => {
+                            this.registrarClick(item.Id);
+                            navigation.navigate('Empresas', { id: item.Id })
+                          }}
+                        >
+                          <List.Item
                             key={index}
-                            activeOpacity={0.6}
-                            underlayColor="#DDDDDD"
-                            onPress={() => {
-                              this.registrarClick(item.Id);
-                              navigation.navigate('Empresas', { id: item.Id })
-                            }}
-                          >
-                            <List.Item
-                              key={index}
-                              title={item.descricao}
-                              left={props => <List.Icon {...props} icon="equal" />}
-                            />
-                          </TouchableHighlight>
-                          <Divider />
-                        </View>
-                      );
-                    })
-                  }
-                </ScrollView>
+                            title={item.descricao}
+                            left={props => <List.Icon {...props} icon="equal" />}
+                          />
+                        </TouchableHighlight>
+                        <Divider />
+                      </View>
+                    );
+                  })
+                }
               </View>
             </View>
           </View>
-        );
-      }
+        </ScrollView>
+      );
     }
   }
 }
@@ -182,10 +124,7 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   categorias: {
-    height: 400
-  },
-  categoriasAuto: {
-    height: 1000
+    height:'100%'
   }
 });
 

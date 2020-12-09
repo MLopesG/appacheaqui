@@ -16,25 +16,17 @@ class Empresa extends React.Component {
     search: '',
     empresas: [],
     carregamento: true,
-    carregamentoCategorias: false,
-    showCancel: false,
+    carregamentoCategorias: false
   };
 
   updateSearch = (search) => {
     this.setState((prevState) => {
       prevState['search'] = search;
-      prevState['showCancel'] = true;
       prevState['carregamentoCategorias'] = true;
       this.getEmpresasSearch(prevState.search);
       return prevState;
     });
   };
-
-  toggleCancel() {
-    this.setState({
-      showCancel: !this.state.showCancel
-    });
-  }
 
   async getEmpresasCategorias() {
     const { id } = this.props.route.params;
@@ -64,15 +56,11 @@ class Empresa extends React.Component {
 
   whatsapp(phone) {
     Linking.canOpenURL("whatsapp://send?text=Ache Aqui Ali").then(supported => {
-      if (supported) {
+
         return Linking.openURL(
-          `whatsapp://send?phone=+55${phone}&text=Ache Aqui Ali`
+          `https://api.whatsapp.com/send?phone=+55${phone}&text=Ache Aqui Ali`
         );
-      } else {
-        return Linking.openURL(
-          `https://api.whatsapp.com/send?phone=${phone}&text=Ache Aqui Ali`
-        );
-      }
+      
     })
   }
 
@@ -89,7 +77,7 @@ class Empresa extends React.Component {
   }
 
   render() {
-    const { search, empresas, showCancel, carregamento, carregamentoCategorias } = this.state;
+    const { search, empresas, carregamento, carregamentoCategorias } = this.state;
     const { navigation } = this.props;
 
     if (carregamento) {
@@ -99,135 +87,66 @@ class Empresa extends React.Component {
         </View>
       );
     } else {
-      if (showCancel) {
-        return (
-          <View style={styles.container}>
-            <View >
-              <View>
-                <Searchbar
-                  onIconPress={() => {
-                    this.toggleCancel()
-                  }}
-                  placeholder="Buscar ..."
-                  onChangeText={this.updateSearch}
-                  value={search}
-                />
-
-              </View>
-              <View>
-                <ScrollView style={styles.categoriasAuto} >
-                  {
-                    carregamentoCategorias ?
-                      (
-                        <View style={styles.load}>
-                          <ActivityIndicator size={35} animating={carregamentoCategorias} color={'#006400'} />
-                        </View>
-                      ) :
-                      <FlatGrid
-                        itemDimension={150}
-                        data={empresas}
-                        renderItem={({ item, index }) => (
-                          <View>
-                            <TouchableHighlight
-                              key={index}
-                              activeOpacity={0.6}
-                              underlayColor="#DDDDDD"
-                              onPress={() => {
-                                navigation.navigate('Profile', { id: item.Id });
-                                this.registrarClick(item.Id);
-                              }}
-                            >
-                              <Surface style={styles.surface} >
-                                <Image
-                                  style={styles.Image}
-                                  source={{
-                                    uri: item.logo,
-                                  }}
-                                />
-                              </Surface>
-                            </TouchableHighlight>
-                            <ToggleButton.Row>
-                              <Button icon="whatsapp" labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.whatsapp(item.fonecelular))}></Button>
-                              <Button icon="phone" labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(item.fonecelular))}></Button>
-                              <Button labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.maps(item))}>
-                                <Icon name="map-marker" size={18} color="#ffffff"
-                                />
-                              </Button>
-                            </ToggleButton.Row>
-                          </View>
-                        )}
-                      />}
-                </ScrollView>
-              </View>
-            </View>
-          </View>
-        );
-      } else {
-        return (
+      return (
+        <ScrollView>
           <View>
+            <BannerCidade />
+          </View>
+          <View style={styles.container}>
+            <Carousel tipo={1}></Carousel>
             <View>
-              <BannerCidade />
+              <Searchbar
+                placeholder="Buscar ..."
+                onChangeText={this.updateSearch}
+                value={search}
+              />
+
             </View>
-            <View style={styles.container}>
-              <Carousel tipo={1}></Carousel>
-              <View>
-                <Searchbar
-                  onIconPress={() => {
-                    this.toggleCancel()
-                  }}
-                  placeholder="Buscar ..."
-                  onChangeText={this.updateSearch}
-                  value={search}
-                />
-
-              </View>
-
-              <View>
-                <ScrollView style={styles.empresas} >
-                  {carregamentoCategorias ? (
-                    <View style={styles.load}>
-                      <ActivityIndicator size={35} animating={carregamento} color={'#006400'} />
-                    </View>
-                  ) : <FlatGrid
-                      itemDimension={150}
-                      data={empresas}
-                      renderItem={({ item, index }) => (
-                        <View>
-                          <TouchableHighlight
-                            key={index}
-                            activeOpacity={0.6}
-                            underlayColor="#DDDDDD"
-                            onPress={() => {
-                              navigation.navigate('Profile', { id: item.Id });
-                              this.registrarClick(item.Id);
-                            }}
-                          >
-                            <Surface style={styles.surface} >
-                              <Image
-                                style={styles.Image}
-                                source={{
-                                  uri: item.logo,
-                                }}
-                              />
-                            </Surface>
-                          </TouchableHighlight>
-                          <ToggleButton.Row>
-                            <Button icon="whatsapp" labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.whatsapp(item.fonecelular))}></Button>
-                            <Button icon="phone" labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(item.fonecelular))}></Button>
-                            <Button labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.maps(item))}>
-                              <Icon name="map-marker" size={18} color="#ffffff"
-                              />
-                            </Button>
-                          </ToggleButton.Row>
-                        </View>
-                      )}
-                    />}
-                </ScrollView>
+            <View>
+              <View style={styles.empresas} >
+                {carregamentoCategorias ? (
+                  <View style={styles.load}>
+                    <ActivityIndicator size={35} animating={carregamento} color={'#006400'} />
+                  </View>
+                ) : <FlatGrid
+                    itemDimension={140}
+                    data={empresas}
+                    renderItem={({ item, index }) => (
+                      <View>
+                        <TouchableHighlight
+                          key={index}
+                          activeOpacity={0.6}
+                          underlayColor="#DDDDDD"
+                          onPress={() => {
+                            navigation.navigate('Profile', { id: item.Id });
+                            this.registrarClick(item.Id);
+                          }}
+                        >
+                          <Surface style={styles.surface} >
+                            <Image
+                              style={styles.Image}
+                              source={{
+                                uri: item.logo,
+                              }}
+                            />
+                          </Surface>
+                        </TouchableHighlight>
+                        <ToggleButton.Row>
+                          <Button icon="whatsapp" labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => this.whatsapp(item.fonecelular)}></Button>
+                          <Button icon="phone" labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(item.fonecelular))}></Button>
+                          <Button labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.maps(item))}>
+                            <Icon name="map-marker" size={18} color="#ffffff"
+                            />
+                          </Button>
+                        </ToggleButton.Row>
+                      </View>
+                    )}
+                  />}
               </View>
             </View>
           </View>
-        );
-      }
+        </ScrollView>
+      );
     }
   }
 }
@@ -252,22 +171,19 @@ const styles = StyleSheet.create({
     marginTop: 10
   },
   empresas: {
-    height: 350,
+    height: '100%',
   },
   Image: {
     height: 150,
     width: 180
   },
   surface: {
-    padding: 8,
+    padding: 6,
     height: 150,
     width: 180,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 4,
-  },
-  categoriasAuto: {
-    height: '100%'
   }
 });
 

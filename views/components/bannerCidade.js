@@ -32,7 +32,7 @@ class BannerCidade extends React.Component {
         <Image
           resizeMode="cover"
           style={styles.cover}
-          source={{ uri: cidade.url != '' ? cidade.url : 'https://www.douradosagora.com.br/media/images/4236/69772/5a3a3e82555b30533a699050227d454e271d33f6b4815.jpg' }}
+          source={{ uri: cidade.url != null ? cidade.url : 'https://www.douradosagora.com.br/media/images/4236/69772/5a3a3e82555b30533a699050227d454e271d33f6b4815.jpg' }}
         />
         <Text style={styles.close}>{this.dateAtual()}  </Text>
       </View>

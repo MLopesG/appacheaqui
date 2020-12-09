@@ -27,7 +27,6 @@ class Carousel extends React.Component {
     render() {
         const { banners, carregamento } = this.state;
 
-
         if (carregamento) {
             return (
                 <View style={styles.load}>
@@ -35,14 +34,19 @@ class Carousel extends React.Component {
                 </View>
             );
         } else {
-
-            return (
-                <View style={styles.bottom}>
-                    <ImageSliderz
-                        height={200}
-                        dataSource={banners} />
-                </View>
-            );
+            if (banners.length === 0) {
+                return (
+                    <View></View>
+                );
+            } else {
+                return (
+                    <View style={styles.bottom}>
+                        <ImageSliderz
+                            height={200}
+                            dataSource={banners} />
+                    </View>
+                );
+            }
         }
     }
 }
