@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, ScrollView, TouchableHighlight } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableHighlight, RefreshControl } from 'react-native';
 import { Searchbar, List, Divider, ActivityIndicator, Colors } from 'react-native-paper';
 import api from '../axios';
 import BannerCidade from './components/bannerCidade';
@@ -9,8 +9,11 @@ class Home extends React.Component {
   state = {
     search: '',
     categorias: [],
+    carousel: [],
+    carregamentoCarousel: true,
     carregamento: true,
     carregamentoCategorias: false,
+    refreshing: false
   };
 
   updateSearch = (search) => {
@@ -22,6 +25,11 @@ class Home extends React.Component {
     });
   };
 
+  async getBanners(tipo, id = null) {
+    const banners = await api.get(`/banner.php?action=all&tipo=${tipo}`);
+    this.setState({ carousel: banners.data.banners, carregamentoCarousel: false });
+  }
+
   async getCategorias() {
     const categorias = await api.get('/categorias.php?action=all');
 
@@ -30,9 +38,11 @@ class Home extends React.Component {
         this.setState({ categorias: categorias.data.categorias, carregamento: false });
       }, 500)
     }
+
+    this.getBanners(0);
   }
 
-  async registrarClick($id) {
+  async registrarClick(id) {
     await api.get(`/categorias.php?action=click&id=${id}`);
   }
 
@@ -45,8 +55,18 @@ class Home extends React.Component {
     this.getCategorias();
   }
 
+  _onRefresh = () => {
+    this.setState({ refreshing: true, carregamento: true });
+    setTimeout(() => {
+      this.setState({ refreshing: false });
+      this.getCategorias();
+    }, 2000)
+
+    clearTimeout();
+  }
+
   render() {
-    const { search, categorias, carregamento, carregamentoCategorias } = this.state;
+    const { search, categorias, carregamento, carregamentoCarousel, carousel, refreshing } = this.state;
     const { navigation } = this.props;
 
     if (carregamento) {
@@ -58,12 +78,15 @@ class Home extends React.Component {
     } else {
 
       return (
-        <ScrollView>
+        <ScrollView refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={this._onRefresh} />}>
           <View>
             <BannerCidade />
           </View>
           <View style={styles.container}>
-            <Carousel tipo={0}></Carousel>
+            <Carousel carregamento={carregamentoCarousel} banners={carousel}></Carousel>
             <View>
               <Searchbar
                 placeholder="Buscar categoria ..."
@@ -84,7 +107,7 @@ class Home extends React.Component {
                           underlayColor="#DDDDDD"
                           onPress={() => {
                             this.registrarClick(item.Id);
-                            navigation.navigate('Empresas', { id: item.Id })
+                            navigation.navigate('Empresas', { id: item.Id, categoria: item.descricao })
                           }}
                         >
                           <List.Item
@@ -124,7 +147,7 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   categorias: {
-    height:'100%'
+    height: '100%'
   }
 });
 

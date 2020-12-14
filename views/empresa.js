@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, ScrollView, Image, TouchableHighlight, Linking, Platform } from 'react-native';
+import { StyleSheet, View, ScrollView, Image, TouchableHighlight, Linking, Platform, Text, RefreshControl } from 'react-native';
 import { Searchbar, Surface, ToggleButton, Button, ActivityIndicator } from 'react-native-paper';
 import { FlatGrid } from 'react-native-super-grid';
 import BannerCidade from './components/bannerCidade';
@@ -15,8 +15,11 @@ class Empresa extends React.Component {
   state = {
     search: '',
     empresas: [],
+    carousel: [],
+    carregamentoCarousel: true,
     carregamento: true,
-    carregamentoCategorias: false
+    carregamentoCategorias: false,
+    refreshing: false
   };
 
   updateSearch = (search) => {
@@ -31,11 +34,14 @@ class Empresa extends React.Component {
   async getEmpresasCategorias() {
     const { id } = this.props.route.params;
 
+
     const empresas = await api.get(`/categorias.php?action=empresas&id=${id}`);
 
     setTimeout(() => {
       this.setState({ empresas: empresas.data.empresas, carregamento: false });
     }, 500)
+
+    this.getBanners(1);
   }
 
   async getEmpresasSearch(search) {
@@ -46,7 +52,7 @@ class Empresa extends React.Component {
     }
   }
 
-  async registrarClick($id) {
+  async registrarClick(id) {
     await api.get(`/clientes.php?action=click&id=${id}`);
   }
 
@@ -57,10 +63,10 @@ class Empresa extends React.Component {
   whatsapp(phone) {
     Linking.canOpenURL("whatsapp://send?text=Ache Aqui Ali").then(supported => {
 
-        return Linking.openURL(
-          `https://api.whatsapp.com/send?phone=+55${phone}&text=Ache Aqui Ali`
-        );
-      
+      return Linking.openURL(
+        `https://api.whatsapp.com/send?phone=+55${phone}&text=Ache Aqui Ali`
+      );
+
     })
   }
 
@@ -72,13 +78,40 @@ class Empresa extends React.Component {
     }
   }
 
+  tituloEmpresa(item) {
+    if (item.tipo === 'pf') {
+      return item.apelido != null ? item.apelido : item.nomecompleto;
+    } else {
+      return item.nomefantasia != null ? item.nomefantasia : item.razaosocial;
+    }
+  }
+
   maps(item) {
     return `https://www.google.com/maps/place/${item.end_rua}+${item.end_numero}+${item.nome}`;
   }
 
+  async getBanners(tipo, id = null) {
+    const banners = await api.get(`/banner.php?action=all&tipo=${tipo}`);
+    this.setState({ carousel: banners.data.banners, carregamentoCarousel: false });
+  }
+
+  _onRefresh = () => {
+    this.setState({ refreshing: true, carregamento: true });
+    setTimeout(() => {
+      this.setState({ refreshing: false });
+      this.getEmpresasCategorias();
+    }, 2000)
+
+    clearTimeout();
+  }
+
   render() {
-    const { search, empresas, carregamento, carregamentoCategorias } = this.state;
-    const { navigation } = this.props;
+    const { search, empresas, carregamento, carregamentoCategorias, carregamentoCarousel, carousel, refreshing } = this.state;
+    const { navigation, route } = this.props;
+    const { categoria } = route.params;
+
+    // Alterar Titulo
+    this.props.navigation.setOptions({ title: categoria });
 
     if (carregamento) {
       return (
@@ -88,12 +121,15 @@ class Empresa extends React.Component {
       );
     } else {
       return (
-        <ScrollView>
+        <ScrollView refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={this._onRefresh} />}>
           <View>
             <BannerCidade />
           </View>
           <View style={styles.container}>
-            <Carousel tipo={1}></Carousel>
+            <Carousel carregamento={carregamentoCarousel} banners={carousel}></Carousel>
             <View>
               <Searchbar
                 placeholder="Buscar ..."
@@ -122,14 +158,16 @@ class Empresa extends React.Component {
                             this.registrarClick(item.Id);
                           }}
                         >
-                          <Surface style={styles.surface} >
-                            <Image
-                              style={styles.Image}
-                              source={{
-                                uri: item.logo,
-                              }}
-                            />
-                          </Surface>
+                          <View>
+                            <Surface style={styles.surface} >
+                              <Image
+                                style={styles.Image}
+                                source={item.logo != null ? { uri: item.logo } : require('./imagens/logo_padrao.fw.png')}
+                              />
+                            </Surface>
+
+                            <Text style={styles.header}>{this.tituloEmpresa(item)}</Text>
+                          </View>
                         </TouchableHighlight>
                         <ToggleButton.Row>
                           <Button icon="whatsapp" labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => this.whatsapp(item.fonecelular)}></Button>
@@ -184,6 +222,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 4,
+  },
+  header: {
+    backgroundColor: '#006400',
+    padding: 12,
+    fontSize: 11,
+    textAlign: 'center',
+    color: '#Fff'
   }
 });
 

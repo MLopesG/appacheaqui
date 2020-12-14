@@ -4,12 +4,16 @@ import { Title, ToggleButton, Button, Divider, ActivityIndicator, Card, Provider
 import WebView from 'react-native-webview';
 import api from '../axios';
 import Carousel from './components/carousel';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 class Profile extends React.Component {
     state = {
         search: '',
         cliente: {},
         servicos: [],
+        videos: [],
+        carousel: [],
+        carregamentoCarousel: true,
         carregamento: true,
         modalVisible: false,
         refreshing: false
@@ -26,8 +30,10 @@ class Profile extends React.Component {
 
         const cliente = await api.get(`/clientes.php?action=single&id=${id}`);
         const servicos = await api.get(`/servicos.php?action=all&id=${id}`);
+        const videos = await api.get(`/clientes.php?action=single-video&id=${id}`);
+        const promocoes = await api.get(`/servicos.php?action=promocoes&id=${id}`);
 
-        this.setState({ cliente: cliente.data.cliente, servicos: servicos.data.servicos, carregamento: false });
+        this.setState({ cliente: cliente.data.cliente, servicos: servicos.data.servicos, videos: videos.data.videos, carousel: promocoes.data.promocoes, carregamentoCarousel: false, carregamento: false });
     }
 
     whatsapp(phone) {
@@ -45,6 +51,11 @@ class Profile extends React.Component {
             return `telprompt:${tel}`;
         }
     }
+
+    maps(item) {
+        return `https://www.google.com/maps/place/${item.end_rua}+${item.end_numero}+${item.nome}`;
+    }
+
 
     email(email) {
         return `mailto:${email}?subject=Contato via app Achei Aqui Ali&body=Contato Achei Aqui Ali`;
@@ -65,9 +76,17 @@ class Profile extends React.Component {
         clearTimeout();
     }
 
+    tituloEmpresa(item) {
+        if (item.tipo === 'pf') {
+            return item.apelido != null ? item.apelido : item.nomecompleto;
+        } else {
+            return item.nomefantasia != null ? item.nomefantasia : item.razaosocial;
+        }
+    }
+
     render() {
 
-        const { cliente, carregamento, refreshing, servicos, modalVisible } = this.state;
+        const { cliente, carregamento, refreshing, servicos, modalVisible, videos,  carregamentoCarousel, carousel } = this.state;
 
         const stylesProfile = function (cliente) {
             return {
@@ -85,7 +104,7 @@ class Profile extends React.Component {
         }
 
         // Alterar Titulo
-        this.props.navigation.setOptions({ title: cliente.apelido });
+        this.props.navigation.setOptions({ title: this.tituloEmpresa(cliente) });
 
         if (carregamento) {
             return (
@@ -119,22 +138,24 @@ class Profile extends React.Component {
                             <View>
                                 <Image
                                     style={styles.header}
-                                    source={{
-                                        uri: cliente.fachada,
-                                    }}
+                                    source={cliente.fachada != null ? { uri: cliente.fachada } : require('./imagens/fachada_padrao.fw.png')}
                                 />
                             </View>
-                            <Image style={styles.avatar} source={{ uri: cliente.logo }} />
+                            <Image style={styles.avatar} source={cliente.logo != null ? { uri: cliente.logo } : require('./imagens/logo_padrao.fw.png')} />
                             <ScrollView style={styles.headerTop}>
                                 <View style={styles.center}>
                                     <Title style={[styles.bottom, styleColor(cliente)]}>{cliente.apelido}</Title>
                                     <ToggleButton.Row>
-                                        <Button icon="play" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => this.toggleButtonModal()}></Button>
-                                        <Button icon="facebook" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(`https://facebook.com/${cliente.facebook}`)}></Button>
-                                        <Button icon="twitter" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(`https://twitter.com/${cliente.twitter}`)}></Button>
-                                        <Button icon="instagram" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(`https://www.instagram.com/${cliente.instagram}`)}></Button>
-                                        <Button icon="whatsapp" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => this.whatsapp(cliente.fonecelular)}></Button>
-                                        <Button icon="phone" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(cliente.fonecelular))} ></Button>
+                                        {cliente.video != null ? <Button icon="play" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => this.toggleButtonModal()}></Button> : <></>}
+                                        {cliente.facebook != null ? <Button icon="facebook" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(`https://facebook.com/${cliente.facebook}`)}></Button> : <></>}
+                                        {cliente.twitter != null ? <Button icon="twitter" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(`https://twitter.com/${cliente.twitter}`)}></Button> : <></>}
+                                        {cliente.instagram != null ? <Button icon="instagram" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(`https://www.instagram.com/${cliente.instagram}`)}></Button> : <></>}
+                                        {cliente.fonecelular != null ? <Button icon="whatsapp" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => this.whatsapp(cliente.fonecelular)}></Button> : <></>}
+                                        {cliente.fonecelular != null ? <Button icon="phone" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(cliente.fonecelular))} ></Button> : <></>}
+                                        <Button labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.maps(cliente))}>
+                                            <Icon name="map-marker" size={18} color={cliente.cor_fonte}
+                                            />
+                                        </Button>
                                     </ToggleButton.Row>
                                 </View>
 
@@ -171,20 +192,43 @@ class Profile extends React.Component {
 
                             <View style={styles.bottom}>
                                 <Text style={[styles.containerInfo, styles.titulo]}>Promoções</Text>
-                                <Carousel tipo="promocao" id={cliente.Id}></Carousel>
+                                <Carousel carregamento={carregamentoCarousel} banners={carousel}></Carousel>
                             </View>
 
                             {
-                                servicos.length > 0 ? <View style={[styles.bottom, styles.btnContainer]}>
+                                servicos.length > 0 ? <View style={[styles.bottom]}>
                                     <Text style={[styles.containerInfo, styles.titulo]}> Produtos e/ou Serviços</Text>
                                     <View >
                                         {
                                             servicos.map((item, index) => {
                                                 return (
                                                     <Card elevation={1} elevation={0} key={index}>
-                                                        <Card.Title title={item.descricao} subtitle={item.valor != null ? 'Valor: ' + item.valor : 'Valor: 0,00'} />
+                                                        { item.valor != '' && item.valor != null ? <Card.Title title={item.descricao} subtitle={item.valor != null ? 'Valor: ' + item.valor : 'Valor: 0,00'} /> : <View style={{ marginBottom: 10 }}></View>}
                                                         <Card.Cover source={{ uri: item.url }} />
                                                     </Card>
+                                                )
+                                            })
+                                        }
+                                    </View>
+                                </View> : <View></View>
+                            }
+
+                            {
+                                videos.length > 0 ? <View style={[styles.bottom, styles.btnContainer]}>
+                                    <Text style={[styles.containerInfo, styles.titulo]}> Videos</Text>
+                                    <View>
+                                        {
+                                            videos.map((item, index) => {
+                                                return (
+                                                    <WebView
+                                                        allowsFullscreenVideo
+                                                        allowsInlineMediaPlayback
+                                                        mediaPlaybackRequiresUserAction
+                                                        source={{
+                                                            uri: item.video
+                                                        }}
+                                                        style={{ width: '100%', height: 200, marginBottom: 20 }}
+                                                    />
                                                 )
                                             })
                                         }
@@ -249,7 +293,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     btnContainer: {
-        marginBottom: 80
+        marginBottom: 10
     },
     header: {
         backgroundColor: "#006400",
