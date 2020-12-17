@@ -5,7 +5,6 @@ import { FlatGrid } from 'react-native-super-grid';
 import BannerCidade from './components/bannerCidade';
 import Carousel from './components/carousel';
 import api from '../axios';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 class Empresa extends React.Component {
   constructor(props) {
@@ -34,7 +33,6 @@ class Empresa extends React.Component {
   async getEmpresasCategorias() {
     const { id } = this.props.route.params;
 
-
     const empresas = await api.get(`/categorias.php?action=empresas&id=${id}`);
 
     setTimeout(() => {
@@ -45,7 +43,13 @@ class Empresa extends React.Component {
   }
 
   async getEmpresasSearch(search) {
-    const getSearch = await api.get(`/categorias.php?action=empresas-search&search=${search}`);
+
+    const { id } = this.props.route.params;
+
+
+    console.log(id);
+
+    const getSearch = await api.get(`/categorias.php?action=empresas-search&search=${search}&id=${id}`);
 
     if (getSearch.data.empresas.length > 0) {
       this.setState({ empresas: getSearch.data.empresas, carregamentoCategorias: false });
@@ -56,11 +60,22 @@ class Empresa extends React.Component {
     await api.get(`/clientes.php?action=click&id=${id}`);
   }
 
+  async registrarClickBtn(tipo, id) {
+    // Tipos de registro
+    // id_empresa_whatsapp
+    // id_empresa_telefone
+    // id_empresa_mapa
+    await api.get(`/click.php?action=register&tipo=${tipo}&id=${id}`);
+  }
+
   componentDidMount() {
     this.getEmpresasCategorias();
   }
 
-  whatsapp(phone) {
+  whatsapp(phone, id) {
+     // Registrar click no banco de dados
+    this.registrarClickBtn('id_empresa_whatsapp', id);
+
     Linking.canOpenURL("whatsapp://send?text=Ache Aqui Ali").then(supported => {
 
       return Linking.openURL(
@@ -70,7 +85,10 @@ class Empresa extends React.Component {
     })
   }
 
-  phone(tel) {
+  phone(tel, id) {
+     // Registrar click no banco de dados
+    this.registrarClickBtn('id_empresa_telefone', id);
+
     if (Platform.OS === 'android') {
       return `tel:${tel}`;
     } else {
@@ -87,6 +105,9 @@ class Empresa extends React.Component {
   }
 
   maps(item) {
+    // Registrar click no banco de dados
+    this.registrarClickBtn('id_empresa_mapa', item.Id);
+
     return `https://www.google.com/maps/place/${item.end_rua}+${item.end_numero}+${item.nome}`;
   }
 
@@ -109,6 +130,9 @@ class Empresa extends React.Component {
     const { search, empresas, carregamento, carregamentoCategorias, carregamentoCarousel, carousel, refreshing } = this.state;
     const { navigation, route } = this.props;
     const { categoria } = route.params;
+
+    const Entities = require('html-entities').XmlEntities;
+    const entities = new Entities();
 
     // Alterar Titulo
     this.props.navigation.setOptions({ title: categoria });
@@ -166,16 +190,22 @@ class Empresa extends React.Component {
                               />
                             </Surface>
 
-                            <Text style={styles.header}>{this.tituloEmpresa(item)}</Text>
+                            <Surface style={styles.surfaceHeader}>
+                              <Text style={styles.header}>{entities.decode(this.tituloEmpresa(item))}</Text>
+                            </Surface>
+                            
                           </View>
                         </TouchableHighlight>
-                        <ToggleButton.Row>
-                          <Button icon="whatsapp" labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => this.whatsapp(item.fonecelular)}></Button>
-                          <Button icon="phone" labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(item.fonecelular))}></Button>
-                          <Button labelStyle={{ color: '#ffffff' }} color="#006400" style={[{ marginTop: 7, marginRight: 5, width: 57, borderColor: '#006400' }]} compact mode="contained" onPress={() => Linking.openURL(this.maps(item))}>
-                            <Icon name="map-marker" size={18} color="#ffffff"
-                            />
-                          </Button>
+                        <ToggleButton.Row style={styles.center}>
+                          <View style={styles.button}>
+                            <Button style={styles.btn} icon="whatsapp"  labelStyle={{ color: '#006400' }} color="#ffffff" compact mode="contained" onPress={() => this.whatsapp(item.fonecelular, item.Id)}></Button>
+                          </View>
+                          <View style={styles.button}>
+                            <Button style={styles.btn}  icon="phone" labelStyle={{ color: '#006400' }} color="#ffffff" compact mode="contained" onPress={() => Linking.openURL(this.phone(item.fonecelular, item.Id))}></Button>
+                          </View>
+                          <View style={styles.button}>
+                            <Button style={styles.btn}  icon="map-marker" labelStyle={{ color: '#006400' }} color="#ffffff" compact mode="contained"  onPress={() => Linking.openURL(this.maps(item))}></Button>
+                          </View>
                         </ToggleButton.Row>
                       </View>
                     )}
@@ -212,23 +242,41 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   Image: {
-    height: 150,
-    width: 180
+    height: 140,
+    width: '100%',
   },
   surface: {
-    padding: 6,
-    height: 150,
-    width: 180,
+    height: 140,
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4,
+    elevation: 2,
+  },
+  surfaceHeader:{
+    elevation: 2
   },
   header: {
-    backgroundColor: '#006400',
+    backgroundColor: '#fff',
     padding: 12,
-    fontSize: 11,
+    fontSize: 12,
     textAlign: 'center',
-    color: '#Fff'
+    color: '#006400',
+    fontWeight:'bold'
+  }, 
+  button:{
+    marginTop:8
+  },
+  btn:{
+    width:50,
+    height:35,
+    display:'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  center:{
+    display:'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   }
 });
 

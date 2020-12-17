@@ -36,7 +36,10 @@ class Profile extends React.Component {
         this.setState({ cliente: cliente.data.cliente, servicos: servicos.data.servicos, videos: videos.data.videos, carousel: promocoes.data.promocoes, carregamentoCarousel: false, carregamento: false });
     }
 
-    whatsapp(phone) {
+    whatsapp(phone, id) {
+        // Registrar click no banco de dados
+        this.registrarClickBtn('id_empresa_whatsapp', id);
+
         Linking.canOpenURL("whatsapp://send?text=Ache Aqui Ali").then(supported => {
             return Linking.openURL(
                 `https://api.whatsapp.com/send?phone=+55${phone}&text=Ache Aqui Ali`
@@ -44,7 +47,10 @@ class Profile extends React.Component {
         })
     }
 
-    phone(tel) {
+    phone(tel, id) {
+        // Registrar click no banco de dados
+        this.registrarClickBtn('id_empresa_telefone', id);
+
         if (Platform.OS === 'android') {
             return `tel:${tel}`;
         } else {
@@ -52,7 +58,18 @@ class Profile extends React.Component {
         }
     }
 
+    async registrarClickBtn(tipo, id) {
+        // Tipos de registro
+        // id_empresa_whatsapp
+        // id_empresa_telefone
+        // id_empresa_mapa
+        await api.get(`/click.php?action=register&tipo=${tipo}&id=${id}`);
+    }
+
     maps(item) {
+        // Registrar click no banco de dados
+        this.registrarClickBtn('id_empresa_mapa', item.Id);
+
         return `https://www.google.com/maps/place/${item.end_rua}+${item.end_numero}+${item.nome}`;
     }
 
@@ -86,13 +103,16 @@ class Profile extends React.Component {
 
     render() {
 
-        const { cliente, carregamento, refreshing, servicos, modalVisible, videos,  carregamentoCarousel, carousel } = this.state;
+        const { cliente, carregamento, refreshing, servicos, modalVisible, videos, carregamentoCarousel, carousel } = this.state;
 
         const stylesProfile = function (cliente) {
             return {
                 backgroundColor: cliente.cor_background,
             }
         }
+
+        const Entities = require('html-entities').XmlEntities;
+        const entities = new Entities();
 
         const styleColor = function (cliente) {
             return {
@@ -104,7 +124,7 @@ class Profile extends React.Component {
         }
 
         // Alterar Titulo
-        this.props.navigation.setOptions({ title: this.tituloEmpresa(cliente) });
+        this.props.navigation.setOptions({ title: entities.decode(this.tituloEmpresa(cliente)) });
 
         if (carregamento) {
             return (
@@ -144,14 +164,14 @@ class Profile extends React.Component {
                             <Image style={styles.avatar} source={cliente.logo != null ? { uri: cliente.logo } : require('./imagens/logo_padrao.fw.png')} />
                             <ScrollView style={styles.headerTop}>
                                 <View style={styles.center}>
-                                    <Title style={[styles.bottom, styleColor(cliente)]}>{cliente.apelido}</Title>
+                                    <Title style={[styles.bottom, styleColor(cliente)]}>{entities.decode(cliente.apelido)}</Title>
                                     <ToggleButton.Row>
                                         {cliente.video != null ? <Button icon="play" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => this.toggleButtonModal()}></Button> : <></>}
                                         {cliente.facebook != null ? <Button icon="facebook" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(`https://facebook.com/${cliente.facebook}`)}></Button> : <></>}
                                         {cliente.twitter != null ? <Button icon="twitter" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(`https://twitter.com/${cliente.twitter}`)}></Button> : <></>}
                                         {cliente.instagram != null ? <Button icon="instagram" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(`https://www.instagram.com/${cliente.instagram}`)}></Button> : <></>}
-                                        {cliente.fonecelular != null ? <Button icon="whatsapp" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => this.whatsapp(cliente.fonecelular)}></Button> : <></>}
-                                        {cliente.fonecelular != null ? <Button icon="phone" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(cliente.fonecelular))} ></Button> : <></>}
+                                        {cliente.fonecelular != null ? <Button icon="whatsapp" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => this.whatsapp(cliente.fonecelular, cliente.Id)}></Button> : <></>}
+                                        {cliente.fonecelular != null ? <Button icon="phone" labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.phone(cliente.fonecelular, cliente.Id))} ></Button> : <></>}
                                         <Button labelStyle={styleColor(cliente)} style={[stylesProfile(cliente), { marginLeft: 5 }]} compact mode="contained" onPress={() => Linking.openURL(this.maps(cliente))}>
                                             <Icon name="map-marker" size={18} color={cliente.cor_fonte}
                                             />
@@ -172,21 +192,25 @@ class Profile extends React.Component {
                                     <Text style={styles.titulo}>Email:</Text>
                                     <Text onPress={() => Linking.openURL(this.email(cliente.email))} style={[styles.click]}>{cliente.email}</Text>
                                 </View>
-                                <View  >
-                                    <Text style={styles.titulo}>Site:</Text>
-                                    <Text onPress={() => Linking.openURL(`http://${cliente.site}`)} style={[styles.click]} >{cliente.site}</Text>
-                                </View>
+                                {
+                                    cliente.site != null && cliente.site != '' ?
+                                        <View>
+                                            <Text style={styles.titulo}>Site:</Text>
+                                            <Text onPress={() => Linking.openURL(`http://${cliente.site}`)} style={[styles.click]} >{cliente.site}</Text>
+                                        </View> : <></>
+                                }
+
                             </View>
 
                             <View>
                                 <Text style={styles.titulo}>Hórario de Funcionamento</Text>
-                                <Text>{cliente.horariodeatendimento}</Text>
+                                <Text>{entities.decode(cliente.horariodeatendimento)}</Text>
                             </View>
 
                             <View style={styles.bottom}>
                                 <Text style={styles.titulo}>Descrição</Text>
                                 <Text style={{ textAlign: "justify" }}>
-                                    {cliente.descricaodaempresa}
+                                    {entities.decode(cliente.descricaodaempresa)}
                                 </Text>
                             </View>
 
@@ -212,7 +236,6 @@ class Profile extends React.Component {
                                     </View>
                                 </View> : <View></View>
                             }
-
                             {
                                 videos.length > 0 ? <View style={[styles.bottom, styles.btnContainer]}>
                                     <Text style={[styles.containerInfo, styles.titulo]}> Videos</Text>

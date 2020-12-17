@@ -5,7 +5,28 @@ import ImageSliderz from 'react-native-image-slideshow';
 
 class Carousel extends React.Component {
 
+    state = {
+        position: 0,
+        interval: null,
+    }
+
+    componentWillMount() {
+        if (this.props.banners && this.props.banners.length == 0) return false;
+        this.setState({
+            interval: setInterval(() => {
+                this.setState({
+                    position: this.state.position === (this.props.banners.length - 1) ? 0 : this.state.position + 1
+                });
+            }, 4500)
+        });
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.state.interval);
+    }
+
     render() {
+
         const { banners, carregamento } = this.props;
 
         if (carregamento) {
@@ -24,7 +45,10 @@ class Carousel extends React.Component {
                     <View style={styles.bottom}>
                         <ImageSliderz
                             height={200}
-                            dataSource={banners} />
+                            dataSource={banners}
+                            position={this.state.position}
+                            onPositionChanged={position => this.setState({ position })}
+                        />
                     </View>
                 );
             }
