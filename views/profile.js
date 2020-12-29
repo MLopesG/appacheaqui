@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Image, Text, ScrollView, Linking, Platform, RefreshControl } from 'react-native';
+import { StyleSheet, TouchableHighlight,  View, Image, Text, ScrollView, Linking, Platform, RefreshControl } from 'react-native';
 import { Title, ToggleButton, Button, Divider, ActivityIndicator, Card, Provider, Modal, Portal } from 'react-native-paper';
 import WebView from 'react-native-webview';
 import api from '../axios';
@@ -16,12 +16,21 @@ class Profile extends React.Component {
         carregamentoCarousel: true,
         carregamento: true,
         modalVisible: false,
-        refreshing: false
+        modalVisibleImagem: false,
+        refreshing: false, 
+        Imagem: null
     };
 
     toggleButtonModal() {
         this.setState({
             modalVisible: !this.state.modalVisible
+        });
+    }
+
+    toggleButtonModalImagem(url) {
+        this.setState({
+            Imagem: url,
+            modalVisibleImagem: !this.state.modalVisibleImagem
         });
     }
 
@@ -103,7 +112,7 @@ class Profile extends React.Component {
 
     render() {
 
-        const { cliente, carregamento, refreshing, servicos, modalVisible, videos, carregamentoCarousel, carousel } = this.state;
+        const { Imagem, modalVisibleImagem,  cliente, carregamento, refreshing, servicos, modalVisible, videos, carregamentoCarousel, carousel } = this.state;
 
         const stylesProfile = function (cliente) {
             return {
@@ -155,6 +164,12 @@ class Profile extends React.Component {
                                     />
                                 </Modal>
                             </Portal>
+
+                            <Portal style={{ width: '100%', height: 200 }}>
+                                <Modal visible={modalVisibleImagem} onDismiss={() => this.toggleButtonModalImagem()} contentContainerStyle={{ margin: 10, backgroundColor: 'white', padding: 10, height: 200 }}>
+                                   <Image source={{ uri: Imagem }}  style={{ width: '100%', height: '100%' }}/>
+                                </Modal>
+                            </Portal>
                             <View>
                                 <Image
                                     style={styles.header}
@@ -187,6 +202,11 @@ class Profile extends React.Component {
                         <View style={styles.containerInfoEmpresa}>
                             <View>
                                 <Text style={styles.titulo}>Informações Pessoais</Text>
+
+                                <View>
+                                    <Text style={styles.titulo}>Endereço:</Text>
+                                    <Text>{entities.decode(`${cliente.end_rua +', '+ cliente.end_numero +' - '+cliente.nome + '/' + cliente.uf}`)}</Text>
+                                </View>
 
                                 <View>
                                     <Text style={styles.titulo}>Email:</Text>
@@ -226,10 +246,12 @@ class Profile extends React.Component {
                                         {
                                             servicos.map((item, index) => {
                                                 return (
-                                                    <Card elevation={1} elevation={0} key={index}>
-                                                        { item.valor != '' && item.valor != null ? <Card.Title title={item.descricao} subtitle={item.valor != null ? 'Valor: ' + item.valor : 'Valor: 0,00'} /> : <View style={{ marginBottom: 10 }}></View>}
-                                                        <Card.Cover source={{ uri: item.url }} />
-                                                    </Card>
+                                                    <TouchableHighlight style={styles.separar} onPress={() => this.toggleButtonModalImagem(item.url)} >
+                                                        <Card elevation={1} elevation={0} key={index} >
+                                                            { item.valor != '' && item.valor != null ? <Card.Title title={item.descricao} subtitle={item.valor != null ? 'Valor: ' + item.valor : 'Valor: 0,00'} /> : <View style={{ marginBottom: 10 }}></View>}
+                                                            <Card.Cover source={{ uri: item.url }} />
+                                                        </Card>
+                                                    </TouchableHighlight>
                                                 )
                                             })
                                         }
@@ -250,7 +272,7 @@ class Profile extends React.Component {
                                                         source={{
                                                             uri: item.video
                                                         }}
-                                                        style={{ width: '100%', height: 200, marginBottom: 20 }}
+                                                        style={{ width: '100%', height: 270, marginBottom: 20 }}
                                                     />
                                                 )
                                             })
@@ -339,6 +361,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 30,
     },
+    separar:{
+        marginBottom:10
+    },  
     buttonContainer: {
         marginTop: 10,
         height: 45,

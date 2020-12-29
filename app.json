@@ -4,7 +4,7 @@
   "expo": {
     "name": "Achei Aqui Ali",
     "slug": "Ache-Aqui-Ali",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -17,7 +17,7 @@
       "bundleIdentifier": "no"
     },
     "android": {
-      "package": "com.yourcompany.yourappname",
+      "package": "acheiaquiali.com.br",
       "versionCode": 1
     }
   }
