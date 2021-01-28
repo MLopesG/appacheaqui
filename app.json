@@ -17,8 +17,8 @@
       "bundleIdentifier": "no"
     },
     "android": {
-      "package": "acheiaquiali.com.br",
-      "versionCode": 1
+      "package": "com.acheiaquiali.ztodigital",
+      "versionCode": 2
     }
   }
 }

@@ -5,6 +5,7 @@ import WebView from 'react-native-webview';
 import api from '../axios';
 import Carousel from './components/carousel';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import ImagePreview from 'react-native-image-preview';
 
 class Profile extends React.Component {
     state = {
@@ -32,6 +33,10 @@ class Profile extends React.Component {
             Imagem: url,
             modalVisibleImagem: !this.state.modalVisibleImagem
         });
+    }
+
+    getImagem(){
+        return this.state.Imagem;
     }
 
     async getEmpresa() {
@@ -112,7 +117,7 @@ class Profile extends React.Component {
 
     render() {
 
-        const { Imagem, modalVisibleImagem,  cliente, carregamento, refreshing, servicos, modalVisible, videos, carregamentoCarousel, carousel } = this.state;
+        const {modalVisibleImagem,  cliente, carregamento, refreshing, servicos, modalVisible, videos, carregamentoCarousel, carousel } = this.state;
 
         const stylesProfile = function (cliente) {
             return {
@@ -164,12 +169,7 @@ class Profile extends React.Component {
                                     />
                                 </Modal>
                             </Portal>
-
-                            <Portal style={{ width: '100%', height: 200 }}>
-                                <Modal visible={modalVisibleImagem} onDismiss={() => this.toggleButtonModalImagem()} contentContainerStyle={{ margin: 10, backgroundColor: 'white', padding: 10, height: 200 }}>
-                                   <Image source={{ uri: Imagem }}  style={{ width: '100%', height: '100%' }}/>
-                                </Modal>
-                            </Portal>
+                            <ImagePreview visible={modalVisibleImagem} source={{uri: this.getImagem()}} close={() => this.toggleButtonModalImagem()} />
                             <View>
                                 <Image
                                     style={styles.header}
