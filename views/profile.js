@@ -1,11 +1,13 @@
 import React from 'react';
-import { StyleSheet, TouchableHighlight,  View, Image, Text, ScrollView, Linking, Platform, RefreshControl } from 'react-native';
-import { Title, ToggleButton, Button, Divider, ActivityIndicator, Card, Provider, Modal, Portal } from 'react-native-paper';
+import { StyleSheet, Dimensions, TouchableHighlight, View, Image, Text, ScrollView, Linking, Platform, RefreshControl } from 'react-native';
+import { Title, ToggleButton, Button, Divider, ActivityIndicator, Card, Modal, Portal } from 'react-native-paper';
 import WebView from 'react-native-webview';
 import api from '../axios';
 import Carousel from './components/carousel';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ImagePreview from 'react-native-image-preview';
+
+const { height } = Dimensions.get('screen');
 
 class Profile extends React.Component {
     state = {
@@ -18,7 +20,7 @@ class Profile extends React.Component {
         carregamento: true,
         modalVisible: false,
         modalVisibleImagem: false,
-        refreshing: false, 
+        refreshing: false,
         Imagem: null
     };
 
@@ -35,19 +37,50 @@ class Profile extends React.Component {
         });
     }
 
-    getImagem(){
+    getImagem() {
         return this.state.Imagem;
     }
 
     async getEmpresa() {
         const { id } = this.props.route.params;
 
+        const Entities = require('html-entities').XmlEntities;
+        const entities = new Entities();
+
         const cliente = await api.get(`/clientes.php?action=single&id=${id}`);
         const servicos = await api.get(`/servicos.php?action=all&id=${id}`);
         const videos = await api.get(`/clientes.php?action=single-video&id=${id}`);
         const promocoes = await api.get(`/servicos.php?action=promocoes&id=${id}`);
 
-        this.setState({ cliente: cliente.data.cliente, servicos: servicos.data.servicos, videos: videos.data.videos, carousel: promocoes.data.promocoes, carregamentoCarousel: false, carregamento: false });
+        let data = [];
+
+        if (promocoes && promocoes.data.promocoes.length > 0) {
+     
+            promocoes.data.promocoes.forEach(element => {
+                if (element.valor != '' && element.descricao != '') {
+                    data.push(
+                        {
+                            title: element.descricao,
+                            caption: element.valor,
+                            url:  element.url,
+                        }
+                    );
+                }else{
+                    data.push(
+                        {
+                            
+                            url:  element.url,
+                        }
+                    )
+                }
+            });
+        }
+
+
+        this.setState({ cliente: cliente.data.cliente, servicos: servicos.data.servicos, videos: videos.data.videos, carousel: data, carregamentoCarousel: false, carregamento: false });
+        // Alterar Titulo
+        this.props.navigation.setOptions({ title: entities.decode(this.tituloEmpresa(cliente.data.cliente)) });
+
     }
 
     whatsapp(phone, id) {
@@ -117,7 +150,9 @@ class Profile extends React.Component {
 
     render() {
 
-        const {modalVisibleImagem,  cliente, carregamento, refreshing, servicos, modalVisible, videos, carregamentoCarousel, carousel } = this.state;
+        const {navigation} = this.props;
+
+        const { modalVisibleImagem, cliente, carregamento, refreshing, servicos, modalVisible, videos, carregamentoCarousel, carousel } = this.state;
 
         const stylesProfile = function (cliente) {
             return {
@@ -128,6 +163,7 @@ class Profile extends React.Component {
         const Entities = require('html-entities').XmlEntities;
         const entities = new Entities();
 
+
         const styleColor = function (cliente) {
             return {
                 color: cliente.cor_fonte,
@@ -136,9 +172,6 @@ class Profile extends React.Component {
                 marginTop: 10
             }
         }
-
-        // Alterar Titulo
-        this.props.navigation.setOptions({ title: entities.decode(this.tituloEmpresa(cliente)) });
 
         if (carregamento) {
             return (
@@ -169,7 +202,7 @@ class Profile extends React.Component {
                                     />
                                 </Modal>
                             </Portal>
-                            <ImagePreview visible={modalVisibleImagem} source={{uri: this.getImagem()}} close={() => this.toggleButtonModalImagem()} />
+                            <ImagePreview visible={modalVisibleImagem} source={{ uri: this.getImagem() }} close={() => this.toggleButtonModalImagem()} />
                             <View>
                                 <Image
                                     style={styles.header}
@@ -205,7 +238,7 @@ class Profile extends React.Component {
 
                                 <View>
                                     <Text style={styles.titulo}>Endereço:</Text>
-                                    <Text>{entities.decode(`${cliente.end_rua +', '+ cliente.end_numero +' - '+cliente.nome + '/' + cliente.uf}`)}</Text>
+                                    <Text>{entities.decode(`${cliente.end_rua + ', ' + cliente.end_numero}, ${cliente.end_complemento}` + ' - ' + cliente.nome + '/' + cliente.uf)}</Text>
                                 </View>
 
                                 <View>
@@ -236,7 +269,7 @@ class Profile extends React.Component {
 
                             <View style={styles.bottom}>
                                 <Text style={[styles.containerInfo, styles.titulo]}>Promoções</Text>
-                                <Carousel carregamento={carregamentoCarousel} banners={carousel}></Carousel>
+                                <Carousel navigation={navigation} carregamento={carregamentoCarousel} banners={carousel}></Carousel>
                             </View>
 
                             {
@@ -247,9 +280,17 @@ class Profile extends React.Component {
                                             servicos.map((item, index) => {
                                                 return (
                                                     <TouchableHighlight style={styles.separar} onPress={() => this.toggleButtonModalImagem(item.url)} >
-                                                        <Card elevation={1} elevation={0} key={index} >
-                                                            { item.valor != '' && item.valor != null ? <Card.Title title={item.descricao} subtitle={item.valor != null ? 'Valor: ' + item.valor : 'Valor: 0,00'} /> : <View style={{ marginBottom: 10 }}></View>}
-                                                            <Card.Cover source={{ uri: item.url }} />
+                                                        <Card elevation={1} elevation={0} key={(index + 1) * 2} >
+                                                            {item.valor != '' && item.valor != null ? <Card.Title title={item.descricao} subtitle={item.valor != null ? 'Valor: ' + item.valor : 'Valor: 0,00'} /> : <View style={{ marginBottom: 10 }}></View>}
+              
+                                                            <Card.Cover source={{ uri: item.url }}  />
+
+                                                            {
+                                                                item.link != null || item.link ?  <Button icon="chevron-right"  onPress={() =>  Linking.openURL(item.link)} color={cliente.cor_fonte} >
+                                                                Ver Mais
+                                                            </Button>
+                                                            : <></>
+                                                            }
                                                         </Card>
                                                     </TouchableHighlight>
                                                 )
@@ -266,13 +307,14 @@ class Profile extends React.Component {
                                             videos.map((item, index) => {
                                                 return (
                                                     <WebView
+                                                        key={(index + 1) * 3}
                                                         allowsFullscreenVideo
                                                         allowsInlineMediaPlayback
                                                         mediaPlaybackRequiresUserAction
                                                         source={{
                                                             uri: item.video
                                                         }}
-                                                        style={{ width: '100%', height: 270, marginBottom: 20 }}
+                                                        style={{ width: '100%', height: height * 0.5, marginBottom: 20 }}
                                                     />
                                                 )
                                             })
@@ -361,9 +403,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 30,
     },
-    separar:{
-        marginBottom:10
-    },  
+    separar: {
+        marginBottom: 10
+    },
     buttonContainer: {
         marginTop: 10,
         height: 45,

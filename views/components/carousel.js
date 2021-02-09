@@ -17,7 +17,7 @@ class Carousel extends React.Component {
                 this.setState({
                     position: this.state.position === (this.props.banners.length - 1) ? 0 : this.state.position + 1
                 });
-            }, 4500)
+            }, 3000)
         });
     }
 
@@ -27,8 +27,9 @@ class Carousel extends React.Component {
 
     render() {
 
-        const { banners, carregamento } = this.props;
-
+        const { banners, carregamento, navigation} = this.props;
+        const {position} = this.state;
+        
         if (carregamento) {
             return (
                 <View style={styles.load}>
@@ -48,6 +49,7 @@ class Carousel extends React.Component {
                             dataSource={banners}
                             position={this.state.position}
                             onPositionChanged={position => this.setState({ position })}
+                            onPress={(pos) => navigation.navigate('Profile', { id: pos.image.id_cliente_banner })}
                         />
                     </View>
                 );

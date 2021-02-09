@@ -34,9 +34,7 @@ class Home extends React.Component {
     const categorias = await api.get('/categorias.php?action=all');
 
     if (categorias.data.success) {
-      setTimeout(() => {
         this.setState({ categorias: categorias.data.categorias, carregamento: false });
-      }, 500)
     }
 
     this.getBanners(0);
@@ -86,7 +84,7 @@ class Home extends React.Component {
             <BannerCidade />
           </View>
           <View style={styles.container}>
-            <Carousel carregamento={carregamentoCarousel} banners={carousel}></Carousel>
+            <Carousel carregamento={carregamentoCarousel} banners={carousel} navigation={navigation}></Carousel>
             <View>
               <Searchbar
                 placeholder="Buscar categoria ..."
@@ -102,7 +100,7 @@ class Home extends React.Component {
                     return (
                       <View>
                         <TouchableHighlight
-                          key={index}
+                          key={item.Id}
                           activeOpacity={0.6}
                           underlayColor="#DDDDDD"
                           onPress={() => {

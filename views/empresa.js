@@ -21,17 +21,20 @@ class Empresa extends React.Component {
     refreshing: false
   };
 
-  updateSearch = (search) => {
+  updateSearch = async (search) => {
     this.setState((prevState) => {
       prevState['search'] = search;
       prevState['carregamentoCategorias'] = true;
       this.getEmpresasSearch(prevState.search);
+      
       return prevState;
     });
   };
 
   async getEmpresasCategorias() {
-    const { id } = this.props.route.params;
+    const { id, categoria } = this.props.route.params;
+
+    this.props.navigation.setOptions({ title: categoria });
 
     const empresas = await api.get(`/categorias.php?action=empresas&id=${id}`);
 
@@ -43,16 +46,17 @@ class Empresa extends React.Component {
   }
 
   async getEmpresasSearch(search) {
+    this.setState({ carregamentoCategorias: true });
 
-    const { id } = this.props.route.params;
-
-
-    console.log(id);
-
-    const getSearch = await api.get(`/categorias.php?action=empresas-search&search=${search}&id=${id}`);
-
-    if (getSearch.data.empresas.length > 0) {
-      this.setState({ empresas: getSearch.data.empresas, carregamentoCategorias: false });
+    const filter = this.state.empresas.filter(function (el) {
+      return el.razaosocial.indexOf(search) >= 0 ||
+        el.nomefantasia.indexOf(search) >= 0 ||
+        el.tags.indexOf(search) >= 0 ||
+        el.descricaodaempresa.indexOf(search) >= 0; 
+    });
+    
+    if (filter.length > 0) {
+      this.setState({ empresas: filter, carregamentoCategorias: false });
     }
   }
 
@@ -128,14 +132,11 @@ class Empresa extends React.Component {
 
   render() {
     const { search, empresas, carregamento, carregamentoCategorias, carregamentoCarousel, carousel, refreshing } = this.state;
-    const { navigation, route } = this.props;
-    const { categoria } = route.params;
-
+    const { navigation } = this.props;
+   
     const Entities = require('html-entities').XmlEntities;
     const entities = new Entities();
 
-    // Alterar Titulo
-    this.props.navigation.setOptions({ title: categoria });
 
     if (carregamento) {
       return (
@@ -185,6 +186,7 @@ class Empresa extends React.Component {
                           <View>
                             <Surface style={styles.surface} >
                               <Image
+                              resizeMode="cover"
                                 style={styles.Image}
                                 source={item.logo != null ? { uri: item.logo } : require('./imagens/logo_padrao.fw.png')}
                               />

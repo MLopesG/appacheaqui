@@ -63,7 +63,7 @@ class App extends React.Component {
               name="Profile"
               component={Perfil}
               options={({ navigation }) =>({
-                title: 'CARREGANDO PERFIL ...',
+                title: 'Carregando perfil ...',
                 headerTitleAlign: 'center',
                 headerTintColor: '#006400',
                 headerTitleStyle: {
@@ -76,7 +76,7 @@ class App extends React.Component {
               name="FaleConosco"
               component={FaleConosco}
               options={{
-                title: 'FALE CONOSCO',
+                title: 'Fale Conosco',
                 headerTitleAlign: 'center',
                 headerTintColor: '#006400',
                 headerTitleStyle: {
