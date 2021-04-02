@@ -1,32 +1,25 @@
 {
+  "name": "acheaqui",
+  "displayName": "acheaqui",
   "expo": {
-    "name": "app-acheiaquiali",
-    "slug": "app-acheiaquiali",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
+    "name": "Achei Aqui Ali",
+    "slug": "Ache-Aqui-Ali",
+    "version": "1.0.2",
     "assetBundlePatterns": [
       "**/*"
     ],
+    "icon":"./img/icon.png",
+    "splash": {
+      "image": "./img/splash.png",
+      "resizeMode": "cover"
+    },
     "ios": {
-      "supportsTablet": true
+      "buildNumber": "1",
+      "bundleIdentifier": "com.acheiaquiali.aplicativo"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
-      }
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
+      "package": "com.acheiaquiali.ztodigital",
+      "versionCode": 4
     }
   }
 }
