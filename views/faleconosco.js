@@ -46,7 +46,7 @@ class FaleConosco extends React.Component {
                         </View>
 
                         <View>
-                            <Text style={styles.titulo}>Versão: 2020V1.1.2</Text>
+                            <Text style={styles.titulo}>Versão: 2020V1.1.3</Text>
                         </View>
 
                         <View style={styles.btnContainer}>

@@ -87,15 +87,18 @@ export default class Inicial extends React.Component {
                                 this.loadCidades(value);
                             }}
                             placeholder={placeholder}
+                            useNativeAndroidPickerStyle={false}
                             style={{
                                 inputAndroid: {
                                     backgroundColor: '#f0f0f0',
-                                    padding: 20,
+                                    padding: 12,
+                                    borderRadius:5,
                                     color: '#212121'
                                 },
                                 inputIOS: {
                                     backgroundColor: '#f0f0f0',
-                                    padding: 20,
+                                    padding: 12,
+                                    borderRadius:5,
                                     color: '#212121',
                                 }
                             }}
@@ -108,15 +111,18 @@ export default class Inicial extends React.Component {
                         cidades.length > 0   ? <View style={styles.containerInput}>
                             <Text style={styles.label}>Selecione sua cidade:</Text>
                             <RNPickerSelect
+                                useNativeAndroidPickerStyle={false}
                                 style={{
                                     inputAndroid: {
                                         backgroundColor: '#f0f0f0',
-                                        padding: 20,
+                                        padding: 12,
+                                        borderRadius:5,
                                         color: '#212121',
                                     },
                                     inputIOS: {
                                         backgroundColor: '#f0f0f0',
-                                        padding: 20,
+                                        padding: 12,
+                                        borderRadius:5,
                                         color: '#212121',
                                     }
                                 }}

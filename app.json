@@ -14,12 +14,12 @@
       "resizeMode": "cover"
     },
     "ios": {
-      "buildNumber": "2",
+      "buildNumber": "3",
       "bundleIdentifier": "com.acheiaquiali.aplicativo"
     },
     "android": {
       "package": "com.acheiaquiali.ztodigital",
-      "versionCode": 7
+      "versionCode": 9
     }
   }
 }

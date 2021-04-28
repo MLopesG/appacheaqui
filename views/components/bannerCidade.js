@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, Image } from 'react-native';
+import { StyleSheet, View, Text, ImageBackground } from 'react-native';
 import api from '../../axios';
 
 const moment = require('moment');
@@ -10,11 +10,14 @@ class BannerCidade extends React.Component {
   };
 
   async getCidade() {
-    
-    const cidade = await api.get(`/cidades.php?action=single&cidade_id=${this.props.cidade}`);
+    const { cidade } = this.props;
 
-    if (cidade.data.cidade != null) {
-      this.setState({ cidade: cidade.data.cidade });
+    if (cidade && cidade === null) return false;
+
+    const cidadeGet = await api.get(`/cidades.php?action=single&cidade_id=${this.props.cidade}`);
+
+    if (cidadeGet.data.cidade != null) {
+      this.setState({ cidade: cidadeGet.data.cidade });
     }
   }
 
@@ -22,10 +25,9 @@ class BannerCidade extends React.Component {
     this.getCidade();
   }
 
-
   dateAtual() {
 
-    const {cidade} = this.state;
+    const { cidade } = this.state;
 
     return `${cidade.nome}  - ${moment().format('DD/MM/YYYY')}`
   }
@@ -36,14 +38,14 @@ class BannerCidade extends React.Component {
 
     return (
       cidade != null ?
-      <View style={styles.containerBANNER}>
-      <Image
-        resizeMode="cover"
-        style={styles.cover}
-        source={{ uri: cidade.url != null ? cidade.url : 'https://www.douradosagora.com.br/media/images/4236/69772/5a3a3e82555b30533a699050227d454e271d33f6b4815.jpg' }}
-      />
-      <Text style={styles.close}>{this.dateAtual()}  </Text>
-    </View> : <></>
+        <View style={styles.containerBANNER}>
+          <ImageBackground
+            source={{ uri: cidade.url != null ? cidade.url : 'https://www.douradosagora.com.br/media/images/4236/69772/5a3a3e82555b30533a699050227d454e271d33f6b4815.jpg' }}
+            style={{ width: '100%', height: '100%' }}
+          >
+            <Text style={styles.close}>{this.dateAtual()}  </Text>
+          </ImageBackground>
+        </View> : <></>
     );
   }
 }
