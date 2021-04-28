@@ -38,14 +38,12 @@ class BannerCidade extends React.Component {
 
     return (
       cidade != null ?
-        <View style={styles.containerBANNER}>
           <ImageBackground
             source={{ uri: cidade.url != null ? cidade.url : 'https://www.douradosagora.com.br/media/images/4236/69772/5a3a3e82555b30533a699050227d454e271d33f6b4815.jpg' }}
-            style={{ width: '100%', height: '100%' }}
+            style={styles.containerBANNER}
           >
             <Text style={styles.close}>{this.dateAtual()}  </Text>
-          </ImageBackground>
-        </View> : <></>
+          </ImageBackground> : <></>
     );
   }
 }
@@ -58,17 +56,14 @@ const styles = StyleSheet.create({
     borderRadius: 5
   },
   close: {
-    position: 'absolute',
-    top: heigth / 2.35,
-    left: '20%',
-    zIndex: 1,
-    width: '100%',
-    height: 150,
     color: 'white',
     fontSize: 16,
     fontWeight: "bold"
   },
   containerBANNER: {
+    flex:1,
+    alignItems:'center',
+    justifyContent:'center',
     width: '100%',
     height: heigth
   },

@@ -153,10 +153,13 @@ class Home extends React.Component {
                           onPress={() => {
                             this.registrarClick(item.Id, item.tipo);
 
-                            if (item.tipo === 'categoria') {
+                            if (item.tipo === 'categoria' || (item && !item.tipo)) {
                               return navigation.navigate('Empresas', { id: item.Id, categoria: item.descricao, cidade: cidade })
                             }
-                            navigation.navigate('Profile', { id: item.Id });
+
+                            if(item.tipo === 'empresa'){
+                              return navigation.navigate('Profile', { id: item.Id });
+                            }
                           }}
                         >
                           <List.Item

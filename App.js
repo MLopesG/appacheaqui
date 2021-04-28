@@ -92,7 +92,7 @@ class App extends React.Component {
                   headerStyle: {
                     height: Platform.OS === 'ios' ? height * 0.12 : height * 0.070
                   },
-                  headerLeft: (navigation) => (
+                  headerLeft: () => (
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                       <BackIcon style={{ marginLeft: 20 }} height="25" width="25" fill={"#006400"} />
                     </TouchableOpacity>
