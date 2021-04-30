@@ -55,9 +55,9 @@ export default class Inicial extends React.Component {
         const { cidade, estado } = this.state;
 
         navigation.navigate("Ache Aqui Ali", {
-                cidade: cidade,
-                estado: estado
-            
+            cidade: cidade,
+            estado: estado
+
         });
     }
 
@@ -92,13 +92,13 @@ export default class Inicial extends React.Component {
                                 inputAndroid: {
                                     backgroundColor: '#f0f0f0',
                                     padding: 12,
-                                    borderRadius:5,
+                                    borderRadius: 5,
                                     color: '#212121'
                                 },
                                 inputIOS: {
                                     backgroundColor: '#f0f0f0',
                                     padding: 12,
-                                    borderRadius:5,
+                                    borderRadius: 5,
                                     color: '#212121',
                                 }
                             }}
@@ -108,7 +108,7 @@ export default class Inicial extends React.Component {
                     </View>
 
                     {
-                        cidades.length > 0   ? <View style={styles.containerInput}>
+                        cidades.length > 0 ? <View style={styles.containerInput}>
                             <Text style={styles.label}>Selecione sua cidade:</Text>
                             <RNPickerSelect
                                 useNativeAndroidPickerStyle={false}
@@ -116,13 +116,13 @@ export default class Inicial extends React.Component {
                                     inputAndroid: {
                                         backgroundColor: '#f0f0f0',
                                         padding: 12,
-                                        borderRadius:5,
+                                        borderRadius: 5,
                                         color: '#212121',
                                     },
                                     inputIOS: {
                                         backgroundColor: '#f0f0f0',
                                         padding: 12,
-                                        borderRadius:5,
+                                        borderRadius: 5,
                                         color: '#212121',
                                     }
                                 }}
@@ -140,7 +140,7 @@ export default class Inicial extends React.Component {
                     }
                     {
                         estado != null && cidade != null ? <View style={styles.btn}>
-                            <Button onPress={() => this.entrar()} mode="contained"  color="#006400">
+                            <Button onPress={() => this.entrar()} mode="contained" color="#006400">
                                 Entrar
                         </Button>
                         </View> : <></>
@@ -159,17 +159,20 @@ const styles = StyleSheet.create({
         height: height
     },
     containerCidadeImagem: {
-        width: width,
-        height: 200,
+        width: width - 80,
+        height: 160,
     },
     containerImagem: {
         marginTop: 10,
-        marginBottom: 10
+        marginBottom: 10,
+        justifyContent: 'center',
+        display: 'flex',
+        alignItems: 'center',
     },
     containerInputs: {
         alignContent: 'center',
         padding: 10,
-        marginTop:20
+        marginTop: 20
     },
     label: {
         fontSize: 12,

@@ -103,6 +103,10 @@ class Home extends React.Component {
   }
 
   render() {
+
+    const Entities = require('html-entities').XmlEntities;
+    const entities = new Entities();
+
     const { search, categorias, carregamento, carregamentoCarousel, carousel, refreshing } = this.state;
     const { navigation } = this.props;
 
@@ -157,13 +161,13 @@ class Home extends React.Component {
                               return navigation.navigate('Empresas', { id: item.Id, categoria: item.descricao, cidade: cidade })
                             }
 
-                            if(item.tipo === 'empresa'){
+                            if (item.tipo === 'empresa') {
                               return navigation.navigate('Profile', { id: item.Id });
                             }
                           }}
                         >
                           <List.Item
-                            title={item.descricao}
+                            title={entities.decode(item.descricao)}
                           />
                         </TouchableHighlight>
                         <Divider />
